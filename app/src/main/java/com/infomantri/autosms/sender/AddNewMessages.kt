@@ -47,7 +47,6 @@ class AddNewMessages: AppCompatActivity() {
             val msg = etEnterMsg.text.toString()
             if(msg.isNullOrEmpty().not())
                 mViewModel.insert(Message(msg))
-            finish()
         }
     }
 
@@ -55,10 +54,10 @@ class AddNewMessages: AppCompatActivity() {
         try{
             val smsManager = SmsManager.getDefault() as SmsManager
             smsManager.sendTextMessage(etEnterPhoneNo.text.toString(),null,etEnterMsg.text.toString(),null,null)
-            Toast.makeText(this@AddNewMessages, "SMS Sent Successfully", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this@AddNewMessages, "SMS Sent Successfully", Toast.LENGTH_SHORT).show()
         }
         catch (e: Exception){
-            Toast.makeText(this@AddNewMessages, "SMS Failed to Send, Please try again...", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this@AddNewMessages, "SMS Failed to Send, Please try again...", Toast.LENGTH_SHORT).show()
         }
     }
 
