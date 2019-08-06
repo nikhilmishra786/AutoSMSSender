@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Auto SMS Sender</string>
+
+    <string name="hint_word">Enter you Message</string>
+    <string name="button_save">Save</string>
+    <string name="empty_not_saved">Message not saved because it is empty.</string>
+
 </resources>
