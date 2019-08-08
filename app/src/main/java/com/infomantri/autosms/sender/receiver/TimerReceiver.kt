@@ -14,13 +14,15 @@ import java.lang.Exception
 class TimerReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
 
-        Log.e("REMINDER", ">>> Reminder recevied 1 ->>>>")
-        AddNewMessages().sendSMS()
-        Log.e("REMINDER", ">>> Reminder recevied 2 ->>>>")
-        playRingtone(context)
-        Log.e("REMINDER", ">>> Reminder recevied 3 ->>>>")
-        Toast.makeText(context, "REMINDER", Toast.LENGTH_LONG).show()
-        Log.e("REMINDER", ">>> Reminder recevied 4 ->>>>")
+        context?.let {
+            Log.e("REMINDER", ">>> Reminder recevied 1 ->>>>")
+            AddNewMessages().sendSMS(context)
+            Log.e("REMINDER", ">>> Reminder recevied 2 ->>>>")
+            playRingtone(context)
+            Log.e("REMINDER", ">>> Reminder recevied 3 ->>>>")
+            Toast.makeText(context, "REMINDER", Toast.LENGTH_LONG).show()
+            Log.e("REMINDER", ">>> Reminder recevied 4 ->>>>")
+        }
     }
 
     private fun playRingtone(context: Context?) {

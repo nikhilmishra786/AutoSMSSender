@@ -15,6 +15,9 @@ interface MessageDao {
     @Query("SELECT * from message_table ORDER BY messages ASC")
     fun getAllMessages(): LiveData<List<Message>>
 
+//    @Query("SELECT * from message_table ORDER BY messages ASC")
+//    fun getAllMsg(): List<Message>
+
     @Delete
     fun delete(message: Message)
 }
