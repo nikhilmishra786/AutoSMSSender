@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <!--<include-->
+    <!--android:id="@+id/tool"-->
+    <!--layout="@layout/custom_toolbar"/>-->
+
+    <ScrollView android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideStart"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.05"/>
+
+
+            <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideEnd"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.95"/>
+
+
+            <TextView
+                    android:id="@+id/tvDefaultMobileNo"
+                    style="@style/SettingsTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Default mobile number : "
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="@dimen/margin_32"
+            />
+
+            <TextView
+                    android:id="@+id/tvDefaultMobileNoValue"
+                    style="@style/SettingsSubTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8424954824"
+                    android:textSize="@dimen/text_18"
+                    android:layout_marginStart="@dimen/text_12"
+                    app:layout_constraintStart_toEndOf="@id/tvDefaultMobileNo"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="@dimen/margin_32"
+            />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/ivSettingEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_edit"
+                    android:padding="@dimen/padding_16"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:layout_marginEnd="@dimen/margin_20"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/tvDefaultMobileNoValue"
+                    app:layout_constraintBottom_toBottomOf="@+id/tvDefaultMobileNoValue"/>
+
+            <TextView
+                    android:id="@+id/tvTotalMsgSent"
+                    style="@style/SettingsTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Messages Sent : "
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo"
+                    android:layout_marginTop="@dimen/margin_32"
+            />
+
+            <TextView
+                    android:id="@+id/tvTotalMsgSentValue"
+                    style="@style/SettingsSubTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="24"
+                    app:layout_constraintTop_toTopOf="@+id/tvTotalMsgSent"
+                    app:layout_constraintBottom_toBottomOf="@+id/tvTotalMsgSent"
+                    app:layout_constraintStart_toEndOf="@+id/tvTotalMsgSent"
+                    android:layout_marginStart="@dimen/margin_12"
+            />
+
+            <TextView
+                    android:id="@+id/tvMsgSuccess"
+                    style="@style/SettingsTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Success : "
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvTotalMsgSent"
+                    android:layout_marginTop="@dimen/margin_32"
+            />
+
+            <TextView
+                    android:id="@+id/tvMsgSuccessValue"
+                    style="@style/SettingsSubTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="18"
+                    app:layout_constraintTop_toTopOf="@+id/tvMsgSuccess"
+                    app:layout_constraintBottom_toBottomOf="@+id/tvMsgSuccess"
+                    app:layout_constraintStart_toEndOf="@+id/tvMsgSuccess"
+                    android:layout_marginStart="@dimen/margin_12"
+            />
+
+            <TextView
+                    android:id="@+id/tvMsgFailure"
+                    style="@style/SettingsTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Failure : "
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvMsgSuccess"
+                    android:layout_marginTop="@dimen/margin_32"
+            />
+
+            <TextView
+                    android:id="@+id/tvMsgFailureValue"
+                    style="@style/SettingsSubTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="6"
+                    app:layout_constraintTop_toTopOf="@+id/tvMsgFailure"
+                    app:layout_constraintBottom_toBottomOf="@+id/tvMsgFailure"
+                    app:layout_constraintStart_toEndOf="@+id/tvMsgFailure"
+                    android:layout_marginStart="@dimen/margin_12"
+            />
+
+            <TextView
+                    android:id="@+id/tvRegisteredMobileNo"
+                    style="@style/SettingsTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Registered Mobile Number : "
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvMsgFailure"
+                    android:layout_marginTop="@dimen/margin_32"
+            />
+
+            <TextView
+                    android:id="@+id/tvRegisteredMobileNoList"
+                    style="@style/SettingsSubTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8424954824\n9867169318\n 9930577805 "
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@+id/tvRegisteredMobileNo"
+                    app:layout_constraintStart_toEndOf="parent"
+                    android:layout_marginStart="@dimen/margin_12"
+                    android:layout_marginTop="@dimen/margin_24"
+
+            />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</LinearLayout>

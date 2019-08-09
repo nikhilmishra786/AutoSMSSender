@@ -26,7 +26,11 @@ class MessageListAdapter : ListAdapter<Message, MessageListAdapter.WordViewHolde
     }
 
     inner class WordViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val wordItemView: TextView = itemView.findViewById(R.id.textView)
+        val msgBodyItemView: TextView = itemView.findViewById(R.id.tvMsgBody)
+        val categoryItemView: TextView = itemView.findViewById(R.id.tvCategoryValue)
+        val sendMsgStatusItemView: TextView = itemView.findViewById(R.id.tvSendMsgStatus)
+        val timeStampItemView: TextView = itemView.findViewById(R.id.tvTimeStamp)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
@@ -37,7 +41,8 @@ class MessageListAdapter : ListAdapter<Message, MessageListAdapter.WordViewHolde
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
         val current = getItem(position)
-        holder.wordItemView.text = current.message
+        holder.msgBodyItemView.text = current.message
+        holder.timeStampItemView.text = current.timeStamp.toString()
     }
 
 }

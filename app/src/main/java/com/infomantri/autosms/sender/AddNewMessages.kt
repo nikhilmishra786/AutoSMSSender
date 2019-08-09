@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.telephony.SmsManager
@@ -12,18 +11,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
-import com.infomantri.autosms.sender.adapter.MessageListAdapter
 import com.infomantri.autosms.sender.asynctask.BaseAsyncTask
 import com.infomantri.autosms.sender.constants.AppConstants
 import com.infomantri.autosms.sender.database.Message
-import com.infomantri.autosms.sender.database.MessageDao
+import com.infomantri.autosms.sender.database.MessageDbRepository
 import com.infomantri.autosms.sender.database.MessageRepository
 import com.infomantri.autosms.sender.database.MessageRoomDatabase
 import com.infomantri.autosms.sender.receiver.TimerReceiver
 import com.infomantri.autosms.sender.viewmodel.MessageViewModel
 import kotlinx.android.synthetic.main.activity_new_message.*
-import java.lang.Exception
-import java.lang.reflect.Array.set
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -48,12 +44,13 @@ class AddNewMessages : AppCompatActivity() {
         btnSetAlarm.setOnClickListener { setAlarm() }
         btnSavePhoneNo.setOnClickListener {
             if (etEnterPhoneNo.text.isNullOrEmpty().not() && etEnterMsg.text.isNullOrEmpty().not()) {
+                sendSMS(this)
             } else Toast.makeText(this, "Enter Phone No.", Toast.LENGTH_SHORT).show()
         }
         btnSaveMsg.setOnClickListener {
             val msg = etEnterMsg.text.toString()
             if (msg.isNullOrEmpty().not())
-                mViewModel.insert(Message(msg))
+                mViewModel.insert(Message(msg, System.currentTimeMillis(), false))
             finish()
         }
     }
@@ -66,17 +63,19 @@ class AddNewMessages : AppCompatActivity() {
                 val smsManager = SmsManager.getDefault() as SmsManager
 
                 try {
-                    val msgDao = MessageRoomDatabase.getDatabase(context).messageDao()
+                    val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
 
-                    val repository = MessageRepository(msgDao)
+                    val repository = MessageDbRepository(msgDao)
                     val allMessages = repository.allMessages
 
-                    allMessages.value?.iterator()?.forEach { msg ->
+                    allMessages.iterator().forEach { msg ->
                         Log.v("ALL_MESSAGES", ">>> all Msg ${msg.message} ")
                         smsManager.sendTextMessage("9867169318", null, msg.message, null, null)
+
                     }
 
-                    Log.v("SEND_SMS_SUCCESS", ">>> SMS Sent Successfully to .....")
+
+                    Log.v("SEND_SMS_SUCCESS", ">>> SMS Sent Successfully to .....}")
                 } catch (e: Exception) {
                     Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
                 }

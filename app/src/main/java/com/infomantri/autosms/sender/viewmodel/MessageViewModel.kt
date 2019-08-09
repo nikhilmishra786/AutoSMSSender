@@ -16,7 +16,7 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
     val allMessages: LiveData<List<Message>>
 
     init {
-        val msgsDao = MessageRoomDatabase.getDatabase(application).messageDao()
+        val msgsDao = MessageRoomDatabase.getDatabase(application).messageLiveDataDao()
         repository = MessageRepository(msgsDao)
         allMessages = repository.allMessages
     }
