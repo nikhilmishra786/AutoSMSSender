@@ -6,5 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "message_table")
 data class Message(
-    @ColumnInfo(name = "messages") val message: String,
-    @PrimaryKey(autoGenerate = true) val slNo: Int = 0)
+    @ColumnInfo(name = "messages_column") val message: String,
+
+    val timeStamp: Long,
+
+    val sent: Boolean,
+
+    @PrimaryKey(autoGenerate = true) val id: Int = 0)

@@ -7,4 +7,10 @@
     <color name="colorTeal">#4DB6AC</color>
     <color name="colorLightGreen">#81C784</color>
     <color name="colorLightPink">#F06292</color>
+
+    <color name="title">#16425b</color>
+    <color name="subTitle">#8d99ae</color>
+    <color name="white">#ffffff</color>
+
+
 </resources>

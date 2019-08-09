@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="thumb_size">48dp</dimen>
+    <dimen name="thumb_text_size">28dp</dimen>
+
+    <dimen name="margin_4">4dp</dimen>
+    <dimen name="margin_8">8dp</dimen>
+    <dimen name="margin_12">12dp</dimen>
+    <dimen name="margin_16">16dp</dimen>
+    <dimen name="margin_26">26dp</dimen>
+    <dimen name="margin_32">32dp</dimen>
+    <dimen name="margin_38">38dp</dimen>
+    <dimen name="margin_42">42dp</dimen>
+    <dimen name="margin_44">44dp</dimen>
+    <dimen name="margin_64">64dp</dimen>
+
+    <dimen name="padding_2">2dp</dimen>
+    <dimen name="padding_4">4dp</dimen>
+    <dimen name="padding_6">6dp</dimen>
+    <dimen name="padding_8">8dp</dimen>
+    <dimen name="padding_12">12dp</dimen>
+    <dimen name="padding_16">16dp</dimen>
+    <dimen name="padding_20">20dp</dimen>
+    <dimen name="padding_24">24dp</dimen>
+    <dimen name="padding_28">28dp</dimen>
+    <dimen name="padding_32">32dp</dimen>
+
+    <dimen name="text_4">4sp</dimen>
+    <dimen name="text_8">8sp</dimen>
+    <dimen name="text_10">10sp</dimen>
+    <dimen name="text_12">12sp</dimen>
+    <dimen name="text_14">14sp</dimen>
+    <dimen name="text_15">15sp</dimen>
+    <dimen name="text_16">16sp</dimen>
+    <dimen name="text_18">18sp</dimen>
+    <dimen name="text_20">20sp</dimen>
+    <dimen name="text_22">22sp</dimen>
+    <dimen name="text_24">24sp</dimen>
+    <dimen name="text_26">26sp</dimen>
+    <dimen name="text_28">28sp</dimen>
+    <dimen name="text_32">32sp</dimen>
+
+    <dimen name="corner_radius_4">4dp</dimen>
+    <dimen name="corner_radius_8">8dp</dimen>
+    <dimen name="corner_radius_16">16dp</dimen>
+
+
+    <dimen name="dimen_24">24dp</dimen>
+    <dimen name="dimen_28">28dp</dimen>
+
+    <dimen name="dialog_vertical_margin">32dp</dimen>
+    <dimen name="dialog_horizontal_margin">32dp</dimen>
+
+    <dimen name="barcode_bottom_sheet_padding_vertical">12dp</dimen>
+    <dimen name="barcode_reticle_ripple_stroke_width">4dp</dimen>
+    <dimen name="barcode_reticle_ripple_size_offset">40dp</dimen>
+    <dimen name="barcode_reticle_stroke_width">4dp</dimen>
+    <dimen name="barcode_reticle_corner_radius">8dp</dimen>
+    <dimen name="barcode_field_padding_horizontal">24dp</dimen>
+    <dimen name="barcode_field_padding_vertical">12dp</dimen>
+    <dimen name="barcode_field_value_size">16sp</dimen>
+    <dimen name="barcode_field_value_padding">16dp</dimen>
+    <dimen name="barcode_field_label_size">12sp</dimen>
+    <dimen name="barcode_field_label_padding">4dp</dimen>
+    <dimen name="divider_height">1dp</dimen>
+
+    <dimen name="search_progress_bar_size">48dp</dimen>
+
+    <dimen name="top_action_bar_padding_horizontal">8dp</dimen>
+    <dimen name="top_action_bar_height">64dp</dimen>
+    <dimen name="top_action_button_padding">16dp</dimen>
+
+    <dimen name="margin_80">80dp</dimen>
+    <dimen name="margin_24">24dp</dimen>
+    <dimen name="ble_connect_height">240dp</dimen>
+    <dimen name="margin_20">20dp</dimen>
+    <dimen name="line_spacing_2">2sp</dimen>
+    <dimen name="margin_30">30dp</dimen>
+
+    <dimen name="expression_mode_width">38dp</dimen>
+    <dimen name="expression_mode_height">38dp</dimen>
+    <dimen name="letdown_mode_width">38dp</dimen>
+    <dimen name="letdown_mode_height">38dp</dimen>
+    <dimen name="rippleStrokeWidth">2dp</dimen>
+    <dimen name="rippleRadius">32dp</dimen>
+    <dimen name="time_text_size">60sp</dimen>
+    <dimen name="margin_58">58dp</dimen>
+    <dimen name="margin_88">88dp</dimen>
+    <dimen name="control_corner_material">5dp</dimen>
+    <dimen name="line_spacing_4">4sp</dimen>
+    <dimen name="duration_width">100dp</dimen>
+    <dimen name="text_60">60sp</dimen>
+    <dimen name="margin_60">60dp</dimen>
+    <dimen name="margin_28">28dp</dimen>
+    <dimen name="margin_50">50dp</dimen>
+</resources>

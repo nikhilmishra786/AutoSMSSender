@@ -11,13 +11,34 @@
 
     <!-- The default font for RecyclerView items is too small.
 The margin is a simple delimiter between the messages. -->
-    <style name="word_title">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">26dp</item>
-        <item name="android:textSize">24sp</item>
+    <style name="msg_title">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:layout_marginBottom">6dp</item>
-        <item name="android:paddingLeft">8dp</item>
+        <item name="android:gravity">center</item>
+
     </style>
+
+    <style name="SettingsTitleText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/title</item>
+        <item name="android:textSize">@dimen/text_18</item>
+        <item name="android:fontFamily">@font/omnes_medium</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingExtra">@dimen/padding_4</item>
+    </style>
+
+    <style name="SettingsSubTitleText">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:textColor">@color/subTitle</item>
+        <item name="android:textSize">@dimen/text_14</item>
+        <item name="android:fontFamily">@font/omnes_medium</item>
+        <item name="android:lineSpacingExtra">@dimen/padding_6</item>
+        <item name="android:gravity">center</item>
+    </style>
+
 
 </resources>
