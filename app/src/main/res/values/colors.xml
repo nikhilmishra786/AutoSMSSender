@@ -5,12 +5,15 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="colorTeal">#4DB6AC</color>
-    <color name="colorLightGreen">#81C784</color>
+    <color name="colorLightGreen">#66BB6A</color>
     <color name="colorLightPink">#F06292</color>
 
     <color name="title">#16425b</color>
-    <color name="subTitle">#8d99ae</color>
+    <color name="subTitle">#0A21AC</color>
+    <color name="LightGrey">#D3D3D3</color>
     <color name="white">#ffffff</color>
+    <color name="orange">#FF7043</color>
+    <color name="red">#EF5350</color>
 
 
 </resources>

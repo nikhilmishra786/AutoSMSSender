@@ -21,6 +21,8 @@
         </activity>
 
         <activity android:name=".AddNewMessages"/>
+        <activity android:name=".SettingsActivity"/>
+        <activity android:name=".base.BaseActivity"/>
 
         <receiver android:name=".receiver.TimerReceiver"
                   android:enabled="true">

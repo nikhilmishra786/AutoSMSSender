@@ -11,4 +11,10 @@ class MessageDbRepository(private val msgDao: MessageDbDao) {
     suspend fun insert(msg: Message) {
         msgDao.insert(msg)
     }
+
+    @WorkerThread
+    fun update(msg: Message){
+        msgDao.update(msg)
+    }
+
 }
