@@ -1,14 +1,12 @@
 package com.infomantri.autosms.sender.base
 
 import android.content.Context
-import android.os.AsyncTask
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.PersistableBundle
-import android.util.Log
+import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
-import com.infomantri.autosms.sender.asynctask.BaseAsyncTask
 import com.infomantri.autosms.sender.database.MessageDbRepository
-import com.infomantri.autosms.sender.database.MessageRepository
 import com.infomantri.autosms.sender.database.MessageRoomDatabase
 
 open class BaseActivity : AppCompatActivity() {
@@ -25,5 +23,7 @@ open class BaseActivity : AppCompatActivity() {
 
         return repository
     }
+
+    fun getSharedPreference(): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
 
 }

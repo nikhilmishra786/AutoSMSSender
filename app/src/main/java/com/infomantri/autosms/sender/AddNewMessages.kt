@@ -47,50 +47,51 @@ class AddNewMessages : BaseActivity() {
         }
         btnSetAlarm.setOnClickListener {
             setAlarm()
-            getDefaultMobileNo(application)
         }
         btnSavePhoneNo.setOnClickListener {
             if (etEnterPhoneNo.text.isNullOrEmpty().not()) {
                 DEFAULT_MOBILE_NO = etEnterPhoneNo.text.toString()
-                insertMobileNoInDb()
-            }else{
-                Toast.makeText(this,"Mobile number cannot be empty...", Toast.LENGTH_SHORT).show()
+                insertMobileNoInDb(application)
+            } else {
+                Toast.makeText(this, "Mobile number cannot be empty...", Toast.LENGTH_SHORT).show()
             }
         }
         btnSaveMsg.setOnClickListener {
             val msg = etEnterMsg.text.toString()
             if (msg.isNullOrEmpty().not())
-                mViewModel.insert(Message(msg, System.currentTimeMillis(),false))
+                mViewModel.insert(Message(msg, System.currentTimeMillis(), false))
             finish()
         }
     }
 
-    fun insertMobileNoInDb() {
-        BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb{
+    fun insertMobileNoInDb(context: Context) {
+        BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
             override fun onStarted() {
 
-                val isDefault = etEnterMsg.text.isNullOrEmpty().not()
+                getFromDatabase(context).insertMobileNo(Subscribers(etEnterPhoneNo.text.toString()))
+                Log.v("INSERT_MOBILE_NO", ">>> inserted Mobile No into Subscribers table .....")
 
-                val subscribersDao = MessageRoomDatabase.getDatabase(application).subscribersDao()
-                val repository = SubscribersRepository(subscribersDao)
-                repository.insertMobileNo(
-                    Subscribers(etEnterPhoneNo.text.toString(), isDefault))
+                val defaultMobileNo = getFromDatabase(context).defaultMobileNo
+                defaultMobileNo.iterator().forEach { subscribers ->
+                    Log.v("PRINT_DEFAULT_NO", ">>> Default: ${subscribers.mobileNo}")
+                }
             }
 
             override fun onCompleted() {
+
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
     }
 
     fun getDefaultMobileNo(context: Context) {
-        BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb{
+        BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
             override fun onStarted() {
-                val subscribersDao = MessageRoomDatabase.getDatabase(context).subscribersDao()
-                val repository = SubscribersRepository(subscribersDao)
-                repository.defaultMobileNo.iterator().forEach {subscribers ->
-                    Log.v("PRINT_DEFAULT_NO", ">>> Default: ${subscribers.mobileNo}  ${subscribers.isDefault}")
+                val defaultMobileNo = getFromDatabase(context).defaultMobileNo
+                defaultMobileNo.iterator().forEach { subscribers ->
+                    Log.v("PRINT_DEFAULT_NO", ">>> Default: ${subscribers.mobileNo}")
                 }
+                Log.v("GET_DEFAULT_NO", ">>> inside onStareted but completed print default No....")
             }
 
             override fun onCompleted() {
@@ -106,38 +107,41 @@ class AddNewMessages : BaseActivity() {
                 val smsManager = SmsManager.getDefault() as SmsManager
                 val repository = getFromDatabase(context)
                 val allMessages = repository.allMessages
-                var i = 0
+                var index = 0
+                var mSentCount = 0
 
                 try {
                     allMessages.iterator().forEach { msg ->
-                        if(!msg.sent && msg.maxLimit <= 2) {
+                        if (!msg.sent) {
                             smsManager.sendTextMessage(
                                 DEFAULT_MOBILE_NO,
                                 null,
-                                msg.message + " >>> " + msg.id,
+                                msg.message,
                                 null,
                                 null
                             )
-                            allMessages[i].apply {
+                            allMessages[index].apply {
                                 sent = true
                             }
-                            repository.update(allMessages[i])
+                            repository.updateMessage(allMessages[index])
                             Thread.sleep(1000)
-                            Log.v("UPDATE_STATUS", " >>>  ${allMessages[i].sent} i: $i")
+                            mSentCount++
+                            Log.v(
+                                "UPDATE_STATUS",
+                                " >>>  ${allMessages[index].sent} msg: ${msg.message} mSentCount: $mSentCount")
                         }
 
-                        i++
-                        Log.v("ALL_MESSAGES", ">>> all Msg ${msg.message} -> ${msg.sent} i: $i")
+                        index++
+                        Log.v("ALL_MESSAGES", ">>> all Msg ${msg.message} -> ${msg.sentCount}")
                     }
 
                     Log.v("UPDATED_MSG", allMessages.last().sent.toString())
                     Log.v("SEND_SMS_SUCCESS", ">>> SMS Sent Successfully to .....}")
                 } catch (e: Exception) {
-                    allMessages.last().apply {
+                    allMessages[index].apply {
                         sent = false
                         isFailed = true
                     }
-                    repository.update(allMessages.last())
                     Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
                 }
             }

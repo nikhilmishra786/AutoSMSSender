@@ -9,8 +9,6 @@ data class Subscribers(
     @ColumnInfo(name = "subscribers_column")
     val mobileNo: String,
 
-    val isDefault: Boolean,
-
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
 )

@@ -5,15 +5,24 @@ import androidx.room.*
 @Dao
 interface MessageDbDao {
 
-    @Insert
-    suspend fun insert(msg: Message)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMessage(msg: Message)
 
     @Update
-    fun update(msgId: Message)
+    fun updateMessage(msgId: Message)
 
     @Query("SELECT * from message_table")
     fun getAllMessages(): List<Message>
 
     @Delete
-    fun delete(message: Message)
+    fun deleteMessage(message: Message)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertMobileNo(mobileNo: Subscribers)
+
+    @Query("SELECT * from subscribers_table")
+    fun getDefaultMobileNo(): List<Subscribers>
+
+    @Delete
+    fun deleteSubscriber(message: Message)
 }

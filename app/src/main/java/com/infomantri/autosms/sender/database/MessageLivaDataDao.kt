@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 
 @Dao
-interface MessageDao {
+interface MessageLivaDataDao {
 
-    @Insert
-    suspend fun insert(msg: Message)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMessage(msg: Message)
 
     @Query("SELECT * from message_table")
     fun getAllMessages(): LiveData<List<Message>>

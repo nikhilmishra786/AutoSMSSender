@@ -2,6 +2,7 @@ package com.infomantri.autosms.sender
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.infomantri.autosms.sender.asynctask.BaseAsyncTask
@@ -17,22 +18,24 @@ class SettingsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        dispData()
         ivSettingEdit.setOnClickListener{
             startActivity(Intent(this, AddNewMessages::class.java))
         }
     }
 
-    private fun dispData() {
+    override fun onResume() {
+        super.onResume()
+    }
 
+    var defaultNo = ""
+
+    private fun dispData() {
         BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb{
 
-            val isCompleted = false
             override fun onStarted() {
-                val subscribersDao = MessageRoomDatabase.getDatabase(application).subscribersDao()
-                val repository = SubscribersRepository(subscribersDao)
-                val defaultMobileNo = repository.defaultMobileNo
-                tvDefaultMobileNoValue.text = defaultMobileNo.first().mobileNo
+                val defaultMobileNo = getFromDatabase(application).defaultMobileNo
+                defaultNo =  defaultMobileNo.first().mobileNo
+                Log.v("GET_DEFAULT_NO", ">>> settings default mobile No is: ${defaultMobileNo.first().mobileNo}")
             }
 
             override fun onCompleted() {

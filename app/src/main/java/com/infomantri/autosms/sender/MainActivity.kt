@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var mViewModel : MessageViewModel
+    private lateinit var mViewModel: MessageViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,9 +32,11 @@ class MainActivity : AppCompatActivity() {
         linearLayoutManager.stackFromEnd = true
         recyclerview.layoutManager = linearLayoutManager
 
-    recyclerview.setOnClickListener {val intent = (Intent(this,SettingsActivity::class.java))
-    startActivity(intent)}
-        mViewModel.allMessages.observe(this, Observer {list ->
+        recyclerview.setOnClickListener {
+            val intent = (Intent(this, SettingsActivity::class.java))
+            startActivity(intent)
+        }
+        mViewModel.allMessages.observe(this, Observer { list ->
             adapter.submitList(list)
         })
     }
