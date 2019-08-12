@@ -2,6 +2,7 @@ package com.infomantri.autosms.sender.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "message_table")
@@ -15,6 +16,6 @@ data class Message(
 
     var isFailed: Boolean = false,
 
-    val maxLimit: Int = 2,
+    var sentCount: Int = 0,
 
     @PrimaryKey(autoGenerate = true) val id: Int = 0)

@@ -8,9 +8,8 @@ import androidx.room.RoomDatabase
 @Database(entities = [Message::class, Subscribers::class], version = 3)
 abstract class MessageRoomDatabase: RoomDatabase() {
 
-    abstract fun messageLiveDataDao(): MessageDao
+    abstract fun messageLiveDataDao(): MessageLivaDataDao
     abstract fun messageDbDao(): MessageDbDao
-    abstract fun subscribersDao(): SubscribersDao
 
     companion object {
         @Volatile

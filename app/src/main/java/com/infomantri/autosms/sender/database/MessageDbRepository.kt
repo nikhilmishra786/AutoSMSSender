@@ -8,13 +8,20 @@ class MessageDbRepository(private val msgDao: MessageDbDao) {
     val allMessages: List<Message> = msgDao.getAllMessages()
 
     @WorkerThread
-    suspend fun insert(msg: Message) {
-        msgDao.insert(msg)
+    suspend fun insertMessage(msg: Message) {
+        msgDao.insertMessage(msg)
     }
 
     @WorkerThread
-    fun update(msg: Message){
-        msgDao.update(msg)
+    fun updateMessage(msg: Message){
+        msgDao.updateMessage(msg)
+    }
+
+    val defaultMobileNo: List<Subscribers> = msgDao.getDefaultMobileNo()
+
+    @WorkerThread
+    fun insertMobileNo(mobileNo: Subscribers) {
+        msgDao.insertMobileNo(mobileNo)
     }
 
 }
