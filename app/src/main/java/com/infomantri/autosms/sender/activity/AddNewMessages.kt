@@ -1,4 +1,4 @@
-package com.infomantri.autosms.sender
+package com.infomantri.autosms.sender.activity
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -8,17 +8,19 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.telephony.SmsManager
 import android.util.Log
+import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
+import com.infomantri.autosms.sender.R
+import com.infomantri.autosms.sender.TimerFragment
 import com.infomantri.autosms.sender.asynctask.BaseAsyncTask
 import com.infomantri.autosms.sender.base.BaseActivity
 import com.infomantri.autosms.sender.constants.AppConstants
 import com.infomantri.autosms.sender.database.*
 import com.infomantri.autosms.sender.receiver.TimerReceiver
 import com.infomantri.autosms.sender.viewmodel.MessageViewModel
+import kotlinx.android.synthetic.main.activity_add_alarm.view.*
 import kotlinx.android.synthetic.main.activity_new_message.*
-import kotlinx.coroutines.awaitAll
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,7 +45,6 @@ class AddNewMessages : BaseActivity() {
 
         tvTimePicker.setOnClickListener {
             showTimePicker()
-            startActivity(Intent(this, SettingsActivity::class.java))
         }
         btnSetAlarm.setOnClickListener {
             setAlarm()
@@ -68,7 +69,7 @@ class AddNewMessages : BaseActivity() {
         BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
             override fun onStarted() {
 
-                getFromDatabase(context).insertMobileNo(Subscribers(etEnterPhoneNo.text.toString()))
+                getFromDatabase(context).insertMobileNo(Subscribers(etEnterPhoneNo.text.toString(),false))
                 Log.v("INSERT_MOBILE_NO", ">>> inserted Mobile No into Subscribers table .....")
 
                 val defaultMobileNo = getFromDatabase(context).defaultMobileNo
@@ -158,8 +159,7 @@ class AddNewMessages : BaseActivity() {
     private fun showTimePicker() {
 
         Calendar.getInstance().apply {
-            val timeFragment = TimerFragment
-                .instance(get(Calendar.HOUR_OF_DAY), get(Calendar.MINUTE))
+            val timeFragment = TimerFragment.instance(get(Calendar.HOUR_OF_DAY), get(Calendar.MINUTE))
 
             timeFragment.setTimeChangeListener(mOnTimeChangeListener)
             timeFragment.show(supportFragmentManager, "time")
