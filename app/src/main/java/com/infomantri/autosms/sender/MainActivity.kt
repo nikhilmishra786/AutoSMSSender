@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.infomantri.autosms.sender.adapter.MessageListAdapter
 import com.infomantri.autosms.sender.viewmodel.MessageViewModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -26,7 +27,13 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = MessageListAdapter()
         recyclerview.adapter = adapter
+        val linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager.reverseLayout = true
+        linearLayoutManager.stackFromEnd = true
+        recyclerview.layoutManager = linearLayoutManager
 
+    recyclerview.setOnClickListener {val intent = (Intent(this,SettingsActivity::class.java))
+    startActivity(intent)}
         mViewModel.allMessages.observe(this, Observer {list ->
             adapter.submitList(list)
         })
