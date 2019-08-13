@@ -20,7 +20,7 @@ interface MessageDbDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMobileNo(mobileNo: Subscribers)
 
-    @Query("SELECT * from subscribers_table")
+    @Query("SELECT * from subscribers_table WHERE isSelected == 1")
     fun getDefaultMobileNo(): List<Subscribers>
 
     @Delete

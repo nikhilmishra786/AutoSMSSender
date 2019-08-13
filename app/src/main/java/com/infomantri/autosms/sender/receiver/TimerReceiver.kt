@@ -4,32 +4,29 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
-import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
-import com.infomantri.autosms.sender.AddNewMessages
-import kotlinx.android.synthetic.main.activity_new_message.*
-import java.lang.Exception
+import com.infomantri.autosms.sender.activity.AddMessages
+import com.infomantri.autosms.sender.activity.AddNewMessages
 
 class TimerReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
 
         context?.let {
             Log.e("REMINDER", ">>> Reminder recevied 1 ->>>>")
-            AddNewMessages().sendSMS(context)
-            Log.e("REMINDER", ">>> Reminder recevied 2 ->>>>")
-            playRingtone(context)
+            AddMessages().sendSMS(context)
+//            playRingtone(context)
             Log.e("REMINDER", ">>> Reminder recevied 3 ->>>>")
             Toast.makeText(context, "REMINDER", Toast.LENGTH_LONG).show()
             Log.e("REMINDER", ">>> Reminder recevied 4 ->>>>")
         }
     }
 
-    private fun playRingtone(context: Context?) {
-        val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-        val ringtone = RingtoneManager.getRingtone(context, uri)
-        ringtone.play()
-    }
+//    private fun playRingtone(context: Context?) {
+//        val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+//        val ringtone = RingtoneManager.getRingtone(context, uri)
+//        ringtone.play()
+//    }
 //
 //    private fun sendSMS() {
 //        try{

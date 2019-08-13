@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/tvMorningAlarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Morning Alarm"
+        android:layout_marginTop="80dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="@dimen/text_20"
+        android:textColor="@color/orange"
+        />
+    <Button
+        android:id="@+id/btnSetMorningAlarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Morning Alarm"
+        android:layout_marginTop="50dp"
+        app:layout_constraintTop_toBottomOf="@id/tvMorningAlarm"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/orange"
+        android:textColor="@color/white"
+        android:padding="@dimen/text_10"
+        android:textSize="@dimen/text_18"
+        />
+
+    <TextView
+        android:id="@+id/tvNightAlarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Morning Alarm"
+        android:layout_marginTop="60dp"
+        app:layout_constraintTop_toBottomOf="@id/btnSetMorningAlarm"
+        app:layout_constraintBottom_toTopOf="@id/btnSetNightAlarm"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="@dimen/text_20"
+        android:textColor="@color/lightYellow"
+        />
+
+    <Button
+        android:id="@+id/btnSetNightAlarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Night Alarm"
+        android:layout_marginTop="50dp"
+        app:layout_constraintTop_toBottomOf="@id/tvNightAlarm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@color/lightYellow"
+        android:textColor="@color/white"
+        android:padding="@dimen/text_10"
+        android:textSize="@dimen/text_18"
+        />
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSaveAlarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_20"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:foreground="@drawable/ic_save_white_24dp"
+
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

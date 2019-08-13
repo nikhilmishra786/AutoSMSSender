@@ -1,15 +1,12 @@
-package com.infomantri.autosms.sender
+package com.infomantri.autosms.sender.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.infomantri.autosms.sender.R
 import com.infomantri.autosms.sender.asynctask.BaseAsyncTask
 import com.infomantri.autosms.sender.base.BaseActivity
-import com.infomantri.autosms.sender.database.MessageDbRepository
-import com.infomantri.autosms.sender.database.MessageRoomDatabase
-import com.infomantri.autosms.sender.database.SubscribersRepository
 import kotlinx.android.synthetic.main.activity_settings.*
 
 class SettingsActivity : BaseActivity() {

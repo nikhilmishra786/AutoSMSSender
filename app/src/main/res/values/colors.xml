@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimary">#26A69A</color>
+    <color name="colorPrimaryDark">#00796B</color>
     <color name="colorAccent">#D81B60</color>
 
     <color name="colorTeal">#4DB6AC</color>
@@ -14,6 +14,8 @@
     <color name="white">#ffffff</color>
     <color name="orange">#FF7043</color>
     <color name="red">#EF5350</color>
+    <color name="lightYellow">#FFA726</color>
+    <color name="lightBlue">#29B6F6</color>
 
 
 </resources>
