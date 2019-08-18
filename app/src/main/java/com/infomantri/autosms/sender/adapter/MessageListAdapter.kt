@@ -1,23 +1,23 @@
 package com.infomantri.autosms.sender.adapter
 
-import android.content.res.Resources
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.ContextCompat
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.infomantri.autosms.sender.R
 import com.infomantri.autosms.sender.database.Message
-import java.text.DateFormat
+import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MessageListAdapter : ListAdapter<Message, MessageListAdapter.WordViewHolder>(DIFF_UTIL) {
+class MessageListAdapter(copiedText: (String, Int) -> Unit) : ListAdapter<Message, MessageListAdapter.WordViewHolder>(DIFF_UTIL) {
 
+    val mCopiedText = copiedText
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<Message>() {
             override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean {
@@ -36,7 +36,11 @@ class MessageListAdapter : ListAdapter<Message, MessageListAdapter.WordViewHolde
         val categoryItemView: TextView = itemView.findViewById(R.id.tvCategoryValue)
         val sendMsgStatusItemView: TextView = itemView.findViewById(R.id.tvSendMsgStatus)
         val timeStampItemView: TextView = itemView.findViewById(R.id.tvTimeStamp)
-
+        val onLongClicked = itemView.setOnLongClickListener {
+            val timeInMillis = timeStampItemView.text.toString()
+            mCopiedText(msgBodyItemView.text.toString(),2 )
+            return@setOnLongClickListener true
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
@@ -67,7 +71,6 @@ class MessageListAdapter : ListAdapter<Message, MessageListAdapter.WordViewHolde
                 holder.sendMsgStatusItemView.setTextColor(Color.parseColor("#EF5350"))
             }
         }
-
-        }
+    }
 
 }

@@ -5,17 +5,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import com.infomantri.autosms.sender.R
 import com.infomantri.autosms.sender.TimerFragment
 import com.infomantri.autosms.sender.base.BaseActivity
 import com.infomantri.autosms.sender.constants.AppConstants
-import com.infomantri.autosms.sender.receiver.TimerReceiver
+import com.infomantri.autosms.sender.receiver.AlarmReceiver
 import kotlinx.android.synthetic.main.activity_add_alarm.*
-import kotlinx.android.synthetic.main.activity_new_message.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -53,13 +50,12 @@ class AddAlarmActivity : BaseActivity() {
 
         val fab: View = findViewById(R.id.fabSaveAlarm)
         fab.setOnClickListener {
-            setAlarm(morningAlarm, requestCodeMorning)
-            setAlarm(nightAlarm, requestCodeNight)
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+            setAlarm(morningAlarm, requestCodeMorning, "Good Morning .....")
+            setAlarm(nightAlarm, requestCodeNight, "Good Night .....")
+            val intent = Intent(this, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
         }
-
 
         btnSetMorningAlarm.setOnClickListener {
             showTimePicker(true)
@@ -96,17 +92,18 @@ class AddAlarmActivity : BaseActivity() {
                         set(Calendar.HOUR_OF_DAY, if (unit == "PM" && hour == 0) hour + 12 else hour)
                         set(Calendar.MINUTE, minute)
                     }
-                    tvNightAlarm.text = nightAlarm.formatDate()
+                    tvNightAlarm.text = nightAlarm.time.toString()
                 }
             }
         }
     }
 
-    private fun setAlarm(calendar: Calendar, requestCode: Int) {
+    private fun setAlarm(calendar: Calendar, requestCode: Int, title: String) {
 
-        val notifyIntent = Intent(this, TimerReceiver::class.java).apply {
-            putExtra(AppConstants.REMINDER_TIMESTAMP, calendar.timeInMillis)
-            putExtra(AppConstants.REMINDER_ID, 9999)
+        val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
+            putExtra("reminder_timestamp", calendar.timeInMillis)
+            putExtra("reminder_id", requestCode)
+            putExtra("reminder_title", title)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -117,13 +114,24 @@ class AddAlarmActivity : BaseActivity() {
         )
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        alarmManager.setRepeating(
+        if(Date().after(calendar.time)){
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+            alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
                 calendar.timeInMillis,
                 24 * 60 * 60 * 1000,
                 pendingIntent
-        )
-        Log.v("MORNING_ALARM", ">>> Morning Alarm: ${morningAlarm.formatDate()} \n night: ${nightAlarm.formatDate()}")
+            )
+        }
+        else {
+            alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                24 * 60 * 60 * 1000,
+                pendingIntent
+            )
+        }
+        Log.v("SET_ALARM", ">>> $title: ${calendar.formatDate()}")
     }
 
     fun Calendar.formatDate(): String? {

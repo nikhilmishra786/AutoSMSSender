@@ -47,28 +47,77 @@
             />
 
             <TextView
-                    android:id="@+id/tvDefaultMobileNoValue"
+                    android:id="@+id/tvDefaultActiveMobileNo"
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="8424954824"
-                    android:textSize="@dimen/text_18"
-                    android:layout_marginStart="@dimen/text_8"
+                    android:layout_marginStart="10dp"
                     app:layout_constraintStart_toEndOf="@id/tvDefaultMobileNo"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNo"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo"
+                    app:layout_constraintEnd_toEndOf="@id/guideEnd"
+                    tools:text="8424954824"
+                    android:textSize="18sp"
+            />
+
+            <TextView
+                    android:id="@+id/tvDefaultMobileNoValue1"
+                    style="@style/SettingsSubTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_18"
+                    android:text="8424954824"
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo"
+                    app:layout_constraintEnd_toStartOf="@id/switchWidget1"
                     android:layout_marginTop="@dimen/margin_32"
             />
 
-            <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/ivSettingEdit"
+            <Switch
+                    android:id="@+id/switchWidget1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNoValue1"
+                    app:layout_constraintBottom_toBottomOf="@id/tvDefaultMobileNoValue1"
+                    app:layout_constraintEnd_toEndOf="@id/guideEnd"
+                    android:layout_marginEnd="@dimen/text_32"
+            />
+
+            <TextView
+                    android:id="@+id/tvDefaultMobileNoValue2"
+                    style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_edit"
-                    android:padding="@dimen/padding_16"
-                    android:background="?selectableItemBackgroundBorderless"
+                    android:textSize="@dimen/text_18"
+                    android:text="9867169318"
+                    android:gravity="start"
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue1"
+                    app:layout_constraintEnd_toStartOf="@id/switchWidget2"
+                    android:layout_marginTop="@dimen/margin_32"
+            />
+
+            <Switch
+                    android:id="@+id/switchWidget2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNoValue2"
+                    app:layout_constraintBottom_toBottomOf="@id/tvDefaultMobileNoValue2"
                     app:layout_constraintEnd_toEndOf="@id/guideEnd"
-                    app:layout_constraintTop_toTopOf="@+id/tvDefaultMobileNoValue"
-                    app:layout_constraintBottom_toBottomOf="@+id/tvDefaultMobileNoValue"/>
+                    android:layout_marginEnd="@dimen/text_32"
+            />
+
+            <!--<androidx.appcompat.widget.AppCompatImageView-->
+                    <!--android:id="@+id/ivSettingEdit"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--app:srcCompat="@drawable/ic_edit"-->
+                    <!--android:padding="@dimen/padding_16"-->
+                    <!--android:background="?selectableItemBackgroundBorderless"-->
+                    <!--app:layout_constraintEnd_toEndOf="@id/guideEnd"-->
+                    <!--app:layout_constraintTop_toTopOf="@+id/tvDefaultMobileNoValue"-->
+                    <!--app:layout_constraintBottom_toBottomOf="@+id/tvDefaultMobileNoValue"/>-->
+
 
             <TextView
                     android:id="@+id/tvTotalMsgSent"
@@ -77,7 +126,7 @@
                     android:layout_height="wrap_content"
                     android:text="Total Messages Sent : "
                     app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue2"
                     android:layout_marginTop="@dimen/margin_32"
             />
 
@@ -86,7 +135,7 @@
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="24"
+                    tools:text="24"
                     app:layout_constraintTop_toTopOf="@+id/tvTotalMsgSent"
                     app:layout_constraintBottom_toBottomOf="@+id/tvTotalMsgSent"
                     app:layout_constraintStart_toEndOf="@+id/tvTotalMsgSent"
@@ -109,7 +158,7 @@
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="18"
+                    tools:text="18"
                     app:layout_constraintTop_toTopOf="@+id/tvMsgSuccess"
                     app:layout_constraintBottom_toBottomOf="@+id/tvMsgSuccess"
                     app:layout_constraintStart_toEndOf="@+id/tvMsgSuccess"
@@ -132,36 +181,40 @@
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="6"
+                    tools:text="6"
                     app:layout_constraintTop_toTopOf="@+id/tvMsgFailure"
                     app:layout_constraintBottom_toBottomOf="@+id/tvMsgFailure"
                     app:layout_constraintStart_toEndOf="@+id/tvMsgFailure"
                     android:layout_marginStart="@dimen/margin_12"
             />
 
-            <TextView
-                    android:id="@+id/tvRegisteredMobileNo"
-                    style="@style/SettingsTitleText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Registered Mobile Number : "
-                    app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvMsgFailure"
-                    android:layout_marginTop="@dimen/margin_32"
-            />
 
-            <TextView
-                    android:id="@+id/tvRegisteredMobileNoList"
-                    style="@style/SettingsSubTitleText"
+            <!--<EditText-->
+                    <!--android:id="@+id/etEnterMobileNo"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginBottom="60dp"-->
+                    <!--android:padding="@dimen/text_20"-->
+                    <!--app:layout_constraintBottom_toBottomOf="parent"-->
+                    <!--app:layout_constraintEnd_toEndOf="parent"-->
+                    <!--app:layout_constraintStart_toStartOf="parent"-->
+                    <!--android:background="@color/colorTeal"-->
+                    <!--android:textColor="@color/white"-->
+                    <!--android:textSize="@dimen/margin_20"-->
+                    <!--android:hint="Enter Mobile Number"-->
+                    <!--android:textColorHint="@color/white"-->
+                    <!--android:maxLength="10"-->
+                    <!--android:inputType="phone"-->
+            <!--/>-->
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabSaveMobileNo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="8424954824\n9867169318\n 9930577805 "
-                    app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@+id/tvRegisteredMobileNo"
-                    app:layout_constraintStart_toEndOf="parent"
-                    android:layout_marginStart="@dimen/margin_12"
-                    android:layout_marginTop="@dimen/margin_24"
-                    android:textSize="@dimen/text_18"
+                    android:layout_margin="@dimen/margin_20"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:foreground="@drawable/ic_save_white_24dp"
             />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
