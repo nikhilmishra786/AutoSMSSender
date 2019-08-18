@@ -9,7 +9,7 @@ data class Subscribers(
     @ColumnInfo(name = "subscribers_column")
     val mobileNo: String,
 
-    val isSelected: Boolean,
+    val isSelected: Boolean = true,
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0

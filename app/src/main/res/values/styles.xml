@@ -8,7 +8,6 @@
         <item name="colorAccent">@color/colorLightPink</item>
     </style>
 
-
     <!-- The default font for RecyclerView items is too small.
 The margin is a simple delimiter between the messages. -->
     <style name="msg_title">

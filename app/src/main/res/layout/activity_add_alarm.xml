@@ -62,7 +62,6 @@
         android:textSize="@dimen/text_18"
         />
 
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabSaveAlarm"
         android:layout_width="wrap_content"
