@@ -1,6 +1,7 @@
 package com.infomantri.autosms.sender.adapter
 
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,7 @@ import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MessageListAdapter(copiedText: (String, Int) -> Unit) : ListAdapter<Message, MessageListAdapter.WordViewHolder>(DIFF_UTIL) {
+class MessageListAdapter(copiedText: (String, String) -> Unit) : ListAdapter<Message, MessageListAdapter.MsgViewHolder>(DIFF_UTIL) {
 
     val mCopiedText = copiedText
     companion object {
@@ -31,25 +32,26 @@ class MessageListAdapter(copiedText: (String, Int) -> Unit) : ListAdapter<Messag
         }
     }
 
-    inner class WordViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class MsgViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val msgBodyItemView: TextView = itemView.findViewById(R.id.tvMsgBody)
         val categoryItemView: TextView = itemView.findViewById(R.id.tvCategoryValue)
         val sendMsgStatusItemView: TextView = itemView.findViewById(R.id.tvSendMsgStatus)
         val timeStampItemView: TextView = itemView.findViewById(R.id.tvTimeStamp)
         val onLongClicked = itemView.setOnLongClickListener {
-            val timeInMillis = timeStampItemView.text.toString()
-            mCopiedText(msgBodyItemView.text.toString(),2 )
+
+            mCopiedText(msgBodyItemView.text.toString(), msgBodyItemView.text.toString())
+            Log.v("Message_Copied", ">>> msg copied: ${msgBodyItemView.text}")
             return@setOnLongClickListener true
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MsgViewHolder {
         val itemView = LayoutInflater.from(parent.context)
                 .inflate(R.layout.recyclerview_item, parent, false)
-        return WordViewHolder(itemView)
+        return MsgViewHolder(itemView)
     }
 
-    override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: MsgViewHolder, position: Int) {
         val current = getItem(position)
         holder.msgBodyItemView.text = current.message
         holder.timeStampItemView.text = SimpleDateFormat("dd-MMM-yyyy", Locale.US).format(current.timeStamp)

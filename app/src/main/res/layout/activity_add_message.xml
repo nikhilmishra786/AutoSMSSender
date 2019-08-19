@@ -8,7 +8,7 @@
 
 
     <Button
-        android:id="@+id/btnSetAlarm"
+        android:id="@+id/btnSendSMS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:text="Set Alarm"
+        android:text="Send SMS"
         android:textSize="14sp"
         android:background="@color/colorLightPink"
         android:textColor="@color/white"
@@ -40,7 +40,7 @@
         android:layout_marginTop="@dimen/margin_30"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintBottom_toTopOf="@id/fabSaveMessage"
-        app:layout_constraintTop_toBottomOf="@id/btnSetAlarm"
+        app:layout_constraintTop_toBottomOf="@id/btnSendSMS"
         android:background="@color/white"
         />
 

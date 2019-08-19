@@ -1,16 +1,23 @@
 package com.infomantri.autosms.sender.receiver
 
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.infomantri.autosms.sender.R
 import com.infomantri.autosms.sender.activity.AddMessages
 import com.infomantri.autosms.sender.activity.HomeActivity
+import com.infomantri.autosms.sender.base.BaseActivity
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -21,14 +28,15 @@ class AlarmReceiver : BroadcastReceiver() {
         Log.v("ALARM_onReceive", ">>> Alarm onRecive() .....")
         val reminderId = intent?.getIntExtra("reminder_id", 1000) ?: 1111
         val title = intent?.getStringExtra("reminder_title") ?: "title: "
-        val timeStamp = intent?.getIntExtra("reminder_timestamp", 0) ?: "timeStamp: "
+        val timeStamp = intent?.getLongExtra("reminder_timestamp", -1) ?: "timeStamp: "
         val subTitle = "Reminder is fired at : ${SimpleDateFormat("dd-MMM-yyyy", Locale.US).format(timeStamp)}"
 
         context?.let {
             Log.e("REMINDER", ">>> Reminder recevied 1 ->>>>")
-            val addMessages = AddMessages()
-                addMessages.sendSMS(context)
-                addMessages.sendNotification(context, reminderId, title, subTitle, HomeActivity::class.java)
+            val baseActivity = BaseActivity()
+            baseActivity.sendSMS(context)
+            sendNotification(context, reminderId, title, subTitle, HomeActivity::class.java)
+
             playRingtone(context)
             vibratePhone(context)
             Log.e("REMINDER", ">>> Reminder recevied 3 ->>>>")
@@ -50,6 +58,44 @@ class AlarmReceiver : BroadcastReceiver() {
         } else {
             vibrator.vibrate(5000)
         }
+    }
+
+    fun sendNotification(
+        context: Context, id: Int, title: String,
+        subTitle: String,
+        activity: Class<*>
+    ) {
+
+        val intent = Intent(context, activity)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        intent.action = "" + Math.random()
+
+        val pendingIntent = PendingIntent.getActivity(
+            context, 2 /* Request code */, intent,
+            PendingIntent.FLAG_CANCEL_CURRENT
+        )
+
+        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+        val notificationBuilder =
+            NotificationCompat.Builder(context, "ReminderChannel")
+                .setSmallIcon(R.drawable.notification_small)
+//                .setLargeIcon(
+//                    BitmapFactory.decodeResource(
+//                        context.resources,
+//                        R.mipmap.ic_launcher_round
+//                    )
+//                )
+                .setContentTitle(title)
+                .setContentText(subTitle)
+                .setSound(defaultSoundUri)
+                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+
+        val notificationManager = context
+            .getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        notificationManager?.notify(id, notificationBuilder.build())
     }
 
 }

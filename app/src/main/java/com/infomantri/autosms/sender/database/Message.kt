@@ -10,7 +10,6 @@ import java.io.Serializable
 
 @Entity(tableName = "message_table")
 data class Message(
-    @ColumnInfo(name = "messages_column")
     var message: String,
 
     var timeStamp: Long,

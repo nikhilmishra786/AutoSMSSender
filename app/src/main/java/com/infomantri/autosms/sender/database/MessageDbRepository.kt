@@ -1,13 +1,12 @@
 package com.infomantri.autosms.sender.database
 
 import androidx.annotation.WorkerThread
-import androidx.lifecycle.LiveData
 
-class MessageDbRepository(private val msgDao: MessageDbDao, val id: Int = -1) {
+class MessageDbRepository(private val msgDao: MessageDbDao, val id: Int = -1, val msg: String = "") {
 
     val allMessages: List<Message> = msgDao.getAllMessages()
     val messageById: Message = msgDao.getMessageById(id)
-    val messageByTimeStamp: Message = msgDao.getMessageByTimeStamp(id)
+    val messageByTimeStamp: Message = msgDao.getMessageByTimeStamp(msg)
 
     @WorkerThread
     suspend fun insertMessage(msg: Message) {

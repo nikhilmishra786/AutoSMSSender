@@ -57,7 +57,7 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun setRecyclerView() {
-        val adapter = MessageListAdapter(copiedText = { copiedText, timeStamp -> copyToClipBoard(copiedText, timeStamp) })
+        val adapter = MessageListAdapter(copiedText = { copiedText, msg -> copyToClipBoard(copiedText, msg) })
         recyclerview.adapter = adapter
         val linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.reverseLayout = true
@@ -69,26 +69,32 @@ class HomeActivity : BaseActivity() {
         })
     }
 
-    private fun copyToClipBoard(copiedText: String, timeStamp: Int) {
+    private fun copyToClipBoard(copiedText: String, msg: String) {
         val clipBoardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = ClipData.newPlainText("MESSAGE", copiedText)
         clipBoardManager.setPrimaryClip(clipData)
         Toast.makeText(this,"Message copied to clipboard...", Toast.LENGTH_SHORT).show()
 
-        showAlertDialog(deleteMsg = {delete -> deleteMessage(timeStamp)})
+        showAlertDialog(deleteMsg = {
+            Log.v("DIALOG", ">>> return from Alert Dialog 1...")
+            deleteMessage(msg)
+            Log.v("DIALOG", ">>> return from Alert Dialog 2...")
+        })
     }
 
-    private fun deleteMessage(timeStamp: Int) {
+    private fun deleteMessage(msg: String) {
+        Log.v("DELETE_MSG", ">>> Inside deleting Msg... <<<")
         BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb{
             override fun onStarted() {
+                Log.v("DELETE_MSG", ">>> deleting Msg...")
                 val msgDao = MessageRoomDatabase.getDatabase(application).messageDbDao()
-                val repository = MessageDbRepository(msgDao, timeStamp)
+                val repository = MessageDbRepository(msgDao, -1, msg)
                 val message = repository.messageByTimeStamp
                 repository.deleteMessage(message)
-                Toast.makeText(application, "$message >>> is deleted...", Toast.LENGTH_SHORT).show()
             }
 
             override fun onCompleted() {
+                Toast.makeText(application, "Message is deleted successfully...", Toast.LENGTH_SHORT).show()
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
