@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.infomantri.autosms.sender.R
@@ -51,7 +52,7 @@ class HomeActivity : BaseActivity() {
         val fab: View = findViewById(R.id.fabAddMessage)
         fab.setOnClickListener {
             val intent = Intent(this, AddMessages::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
         }
     }
@@ -158,7 +159,7 @@ class HomeActivity : BaseActivity() {
             }
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.SEND_SMS),
+                    arrayOf(Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE),
                     REQUEST_PERMISSION_SEND_SMS)
 
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an

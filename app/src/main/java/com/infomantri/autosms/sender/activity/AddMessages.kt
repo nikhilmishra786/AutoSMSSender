@@ -62,8 +62,11 @@ class AddMessages : BaseActivity() {
             //            val intent = Intent(this, AddAlarmActivity::class.java)
 //            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 //            startActivity(intent)        }
-            if (mCount == 3)
-                sendSMS(this)
+
+            if (mCount == 3) {
+                sendSMS(application)
+                mCount++
+            }
             else {
                 mCount++
                 Toast.makeText(this,"Clicked: ${mCount}", Toast.LENGTH_SHORT).show()

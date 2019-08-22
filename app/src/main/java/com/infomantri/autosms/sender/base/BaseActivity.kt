@@ -1,5 +1,6 @@
 package com.infomantri.autosms.sender.base
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -8,17 +9,18 @@ import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.media.RingtoneManager
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.telephony.SmsManager
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.infomantri.autosms.sender.R
+import com.infomantri.autosms.sender.activity.HomeActivity
 import com.infomantri.autosms.sender.asynctask.BaseAsyncTask
 import com.infomantri.autosms.sender.database.MessageDbRepository
 import com.infomantri.autosms.sender.database.MessageRoomDatabase
@@ -30,19 +32,22 @@ open class BaseActivity : AppCompatActivity() {
     val IS_DEFAULT_NO = "IS_DEFAULT_NO"
     val DEFAULT_MOBILE_NO = "DEFAULT_MOBILE_NO"
 
+    companion object {
+        var MESSAGE_SPLIT_COUNT = 0
+        var SENT_MESSAGE_COUNT = 0
+        var DELIVERED_MESSAGE_COUNT = 0
+    }
+
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState)
 
     }
 
-    companion object
-
     fun getFromDatabase(context: Context): MessageDbRepository {
 
         val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
-        val repository = MessageDbRepository(msgDao)
 
-        return repository
+        return MessageDbRepository(msgDao)
     }
 
     fun getSharedPreference(context: Context): SharedPreferences =
@@ -95,8 +100,8 @@ open class BaseActivity : AppCompatActivity() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val notificationBuilder =
-            NotificationCompat.Builder(context, "ReminderChannel")
-                .setSmallIcon(R.drawable.ic_launcher_background)
+            NotificationCompat.Builder(context, "AlarmReminderChannel")
+                .setSmallIcon(R.drawable.ic_sms_launcher_icon_108x108)
                 .setLargeIcon(
                     BitmapFactory.decodeResource(
                         context.resources,
@@ -112,10 +117,17 @@ open class BaseActivity : AppCompatActivity() {
 
         val notificationManager = context
             .getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel("AlarmReminderChannel", "Auto SMS Sender channel", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Text"
+            }
+            notificationManager?.createNotificationChannel(channel)
+        }
+
         notificationManager?.notify(id, notificationBuilder.build())
     }
 
-    fun sendSMS(context: Context, isFromDeliverReceiver: Boolean = false) {
+    fun sendSMS(context: Context, isMessageSent: Boolean = false) {
         val smsManager = SmsManager.getDefault() as SmsManager
         Log.v("SmsManager_",">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}")
 
@@ -130,7 +142,7 @@ open class BaseActivity : AppCompatActivity() {
                 var mSentCount = 0
 
                 try {
-                    if (isFromDeliverReceiver) {
+                    if (isMessageSent) {
                         updateDeliverStatus(context)
                     } else {
                         allMessages.iterator().forEach { msg ->
@@ -138,21 +150,25 @@ open class BaseActivity : AppCompatActivity() {
 
                                 val sentIntent = Intent(context, SentReceiver::class.java).apply {
                                     putExtra("MESSAGE_SENT", msg.id)
+                                    putExtra("reminder_timestamp", System.currentTimeMillis())
+                                    putExtra("reminder_id", 6)
+                                    putExtra("reminder_title", "Message Sent Successfully...")
                                 }
+                                sentIntent.action = "message_sent"
 
                                 val sentPendingIntent = PendingIntent.getBroadcast(
                                     context, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT
                                 )
 
-                                val deliverIntent = Intent(context, DeliverReceiver::class.java).apply {
+                                val deliveredIntent = Intent(context, DeliverReceiver::class.java).apply {
                                     putExtra("MESSAGE_DELIVER", msg.id)
                                 }
                                 val deliveredPendingIntent = PendingIntent.getBroadcast(
-                                    context, 1, deliverIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                                    context, 0, deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT
                                 )
 
-                                val sentPIList = arrayListOf(sentPendingIntent)
-                                val deliverPIList = arrayListOf(deliveredPendingIntent)
+                                val sentPIList = ArrayList<PendingIntent>()
+                                val deliveredPIList = ArrayList<PendingIntent>()
 
                                 getSharedPreference(context).edit().putInt("MESSAGE_ID", msg.id).apply()
 
@@ -161,13 +177,22 @@ open class BaseActivity : AppCompatActivity() {
 //                                    Log.v("DIVIDE_MESSAGE", ">>> divide Msg: $msg\n")
 //                                    deliverPIList.add(deliveredPendingIntent)
 //                                }
+                                var count = 0
+
+                                repeat(msgListParts.size) {
+                                    sentPIList.add(count, sentPendingIntent)
+                                    deliveredPIList.add(count, deliveredPendingIntent)
+                                    count++
+                                }
+                                MESSAGE_SPLIT_COUNT = count
+                                getSharedPreference(context).edit().putInt("MESSAGE_SPLIT_COUNT", count).apply()
 
                                 smsManager.sendMultipartTextMessage(
                                     DEFAULT_MOBILE_NO,
                                     null,
                                     msgListParts,
                                     sentPIList,
-                                    deliverPIList
+                                    deliveredPIList
                                 )
 
                                 Thread.sleep(2 * 1000)
@@ -200,6 +225,7 @@ open class BaseActivity : AppCompatActivity() {
                         sent = false
                         isFailed = true
                     }
+                    sendNotification(application, 404, "SMS send error!", "Error -> $e", HomeActivity::class.java)
                     Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
                 }
             }
@@ -211,7 +237,7 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     fun updateDeliverStatus(context: Context) {
-        Log.v("MSG_DELIVERED", ">>> Msg delivered Running AsyncTask onStarted()...")
+        Log.v("MSG_DELIVERED", ">>> updateDeliverStatus Running AsyncTask onStarted()...")
 //                val messageId = intent?.getIntExtra("MESSAGE_DELIVER",-1)
 
         val messageId = getSharedPreference(context).getInt("MESSAGE_ID", -1)
@@ -229,7 +255,7 @@ open class BaseActivity : AppCompatActivity() {
 
             Log.v(
                 "MSG_DELIVERY_STATUS",
-                ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
+                ">>> Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
             )
         }
     }
