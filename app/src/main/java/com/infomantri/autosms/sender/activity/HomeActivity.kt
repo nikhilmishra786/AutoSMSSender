@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.infomantri.autosms.sender.R
@@ -51,13 +52,13 @@ class HomeActivity : BaseActivity() {
         val fab: View = findViewById(R.id.fabAddMessage)
         fab.setOnClickListener {
             val intent = Intent(this, AddMessages::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
         }
     }
 
     private fun setRecyclerView() {
-        val adapter = MessageListAdapter(copiedText = { copiedText, timeStamp -> copyToClipBoard(copiedText, timeStamp) })
+        val adapter = MessageListAdapter(copiedText = { copiedText, msg -> copyToClipBoard(copiedText, msg) })
         recyclerview.adapter = adapter
         val linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.reverseLayout = true
@@ -69,26 +70,32 @@ class HomeActivity : BaseActivity() {
         })
     }
 
-    private fun copyToClipBoard(copiedText: String, timeStamp: Int) {
+    private fun copyToClipBoard(copiedText: String, msg: String) {
         val clipBoardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = ClipData.newPlainText("MESSAGE", copiedText)
         clipBoardManager.setPrimaryClip(clipData)
         Toast.makeText(this,"Message copied to clipboard...", Toast.LENGTH_SHORT).show()
 
-        showAlertDialog(deleteMsg = {delete -> deleteMessage(timeStamp)})
+        showAlertDialog(deleteMsg = {
+            Log.v("DIALOG", ">>> return from Alert Dialog 1...")
+            deleteMessage(msg)
+            Log.v("DIALOG", ">>> return from Alert Dialog 2...")
+        })
     }
 
-    private fun deleteMessage(timeStamp: Int) {
+    private fun deleteMessage(msg: String) {
+        Log.v("DELETE_MSG", ">>> Inside deleting Msg... <<<")
         BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb{
             override fun onStarted() {
+                Log.v("DELETE_MSG", ">>> deleting Msg...")
                 val msgDao = MessageRoomDatabase.getDatabase(application).messageDbDao()
-                val repository = MessageDbRepository(msgDao, timeStamp)
+                val repository = MessageDbRepository(msgDao, -1, msg)
                 val message = repository.messageByTimeStamp
                 repository.deleteMessage(message)
-                Toast.makeText(application, "$message >>> is deleted...", Toast.LENGTH_SHORT).show()
             }
 
             override fun onCompleted() {
+                Toast.makeText(application, "Message is deleted successfully...", Toast.LENGTH_SHORT).show()
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
@@ -152,7 +159,7 @@ class HomeActivity : BaseActivity() {
             }
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.SEND_SMS),
+                    arrayOf(Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE),
                     REQUEST_PERMISSION_SEND_SMS)
 
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an

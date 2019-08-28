@@ -17,8 +17,8 @@ interface MessageDbDao {
     @Query("SELECT * from message_table WHERE id = :mId")
     fun getMessageById(mId: Int): Message
 
-    @Query("SELECT * from message_table WHERE timeStamp = :mTimeStamp")
-    fun getMessageByTimeStamp(mTimeStamp: Int): Message
+    @Query("SELECT * from message_table WHERE message = :mMsg")
+    fun getMessageByTimeStamp(mMsg: String): Message
 
     @Delete
     fun deleteMessage(message: Message)

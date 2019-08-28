@@ -25,14 +25,16 @@ class AddAlarmActivity : BaseActivity() {
     private val morningAlarm by lazy {
         Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 5)
-            set(Calendar.MINUTE, 58)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND,0)
         }
     }
 
     private val nightAlarm by lazy {
         Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 20)
-            set(Calendar.MINUTE, 28)
+            set(Calendar.MINUTE, 29)
+            set(Calendar.SECOND,0)
         }
     }
 
@@ -82,17 +84,17 @@ class AddAlarmActivity : BaseActivity() {
             when{
                 isMorningAlarm -> {
                     morningAlarm.apply {
-                        set(Calendar.HOUR_OF_DAY, if (unit == "PM" && hour == 0) hour + 12 else hour)
+                        set(Calendar.HOUR_OF_DAY, if (unit == "PM") hour + 12 else hour)
                         set(Calendar.MINUTE, minute)
                     }
                     tvMorningAlarm.text = morningAlarm.formatDate()
                 }
                 else -> {
                     nightAlarm.apply {
-                        set(Calendar.HOUR_OF_DAY, if (unit == "PM" && hour == 0) hour + 12 else hour)
+                        set(Calendar.HOUR_OF_DAY, if (unit == "PM") hour + 12 else hour)
                         set(Calendar.MINUTE, minute)
                     }
-                    tvNightAlarm.text = nightAlarm.time.toString()
+                    tvNightAlarm.text = nightAlarm.formatDate()
                 }
             }
         }

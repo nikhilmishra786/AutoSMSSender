@@ -8,7 +8,7 @@
 
 
     <Button
-        android:id="@+id/btnSetAlarm"
+        android:id="@+id/btnSendSMS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
@@ -16,33 +16,45 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:text="Set Alarm"
+        android:text="Send SMS"
         android:textSize="14sp"
         android:background="@color/colorLightPink"
         android:textColor="@color/white"
         />
 
 
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEnterFeedback"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:counterEnabled="true"
+            app:counterMaxLength="660"
+            android:layout_marginTop="@dimen/margin_12"
+            style="@style/LoginEditTextInputLayout"
+            android:hint="Add Message..."
+            app:layout_goneMarginTop="40dp"
+            android:layout_marginStart="@dimen/margin_20"
+            android:layout_marginEnd="@dimen/margin_20"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textColor="@color/colorLightPink"
+            android:textColorHint="@color/colorLightPink"
+            android:layout_marginBottom="@dimen/margin_20"
+            app:layout_constraintTop_toBottomOf="@id/btnSendSMS"
+            android:background="@color/white">
 
-    <EditText
-        android:id="@+id/etEnterMsg"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:hint="Add Message....."
-        android:maxLength="670"
-        android:padding="@dimen/margin_20"
-        android:fontFamily="@font/omnes_medium"
-        android:textSize="24sp"
-        android:gravity="top"
-        android:textColor="@color/colorLightPink"
-        android:textColorHint="@color/colorLightPink"
-        android:layout_marginBottom="@dimen/margin_20"
-        android:layout_marginTop="@dimen/margin_30"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/fabSaveMessage"
-        app:layout_constraintTop_toBottomOf="@id/btnSetAlarm"
-        android:background="@color/white"
-        />
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEnterFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start|top"
+                android:minLines="10"
+                android:maxLines="20"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabSaveMessage"
