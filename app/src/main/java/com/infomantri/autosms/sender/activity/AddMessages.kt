@@ -49,7 +49,7 @@ class AddMessages : BaseActivity() {
 
         val fab: View = findViewById(R.id.fabSaveMessage)
         fab.setOnClickListener {
-            val msg = etEnterMsg.text.toString()
+            val msg = etEnterMessage.text.toString()
             if (msg.isEmpty().not()) {
                 mViewModel.insert(Message(msg, System.currentTimeMillis(), false))
             }

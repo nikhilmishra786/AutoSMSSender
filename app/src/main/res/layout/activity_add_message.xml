@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/LightGrey">
+    android:background="@color/white">
 
 
     <Button
@@ -17,14 +17,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:text="Send SMS"
+        android:textColor="@color/white"
         android:textSize="14sp"
         android:background="@color/colorLightPink"
-        android:textColor="@color/white"
         />
 
 
     <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilEnterFeedback"
+            android:id="@+id/tilEnterMessage"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:counterEnabled="true"
@@ -40,16 +40,19 @@
             android:textColor="@color/colorLightPink"
             android:textColorHint="@color/colorLightPink"
             android:layout_marginBottom="@dimen/margin_20"
-            app:layout_constraintTop_toBottomOf="@id/btnSendSMS"
-            android:background="@color/white">
+            app:layout_constraintTop_toBottomOf="@id/btnSendSMS">
 
         <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etEnterFeedback"
+                android:id="@+id/etEnterMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start|top"
                 android:minLines="10"
-                android:maxLines="20"/>
+                android:maxLines="20"
+                android:textColor="@color/colorLightPink"
+                android:textColorHint="@color/colorLightPink"
+                android:background="@color/white"
+                />
 
     </com.google.android.material.textfield.TextInputLayout>
 
