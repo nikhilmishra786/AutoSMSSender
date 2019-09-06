@@ -14,9 +14,11 @@ import com.infomantri.autosms.send.database.Message
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MessageListAdapter(copiedText: (String, String) -> Unit) : ListAdapter<Message, MessageListAdapter.MsgViewHolder>(DIFF_UTIL) {
+class MessageListAdapter(copiedText: (String, String) -> Unit) :
+    ListAdapter<Message, MessageListAdapter.MsgViewHolder>(DIFF_UTIL) {
 
     val mCopiedText = copiedText
+
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<Message>() {
             override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean {
@@ -45,14 +47,15 @@ class MessageListAdapter(copiedText: (String, String) -> Unit) : ListAdapter<Mes
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MsgViewHolder {
         val itemView = LayoutInflater.from(parent.context)
-                .inflate(R.layout.recyclerview_item, parent, false)
+            .inflate(R.layout.recyclerview_item, parent, false)
         return MsgViewHolder(itemView)
     }
 
     override fun onBindViewHolder(holder: MsgViewHolder, position: Int) {
         val current = getItem(position)
         holder.msgBodyItemView.text = current.message
-        holder.timeStampItemView.text = SimpleDateFormat("dd-MMM-yyyy", Locale.US).format(current.timeStamp)
+        holder.timeStampItemView.text =
+            SimpleDateFormat("dd-MMM-yyyy", Locale.US).format(current.timeStamp)
 
         when {
 

@@ -113,7 +113,7 @@ class HomeActivity : BaseActivity() {
             }
 
             R.id.action_set_alarm -> {
-                val intent = Intent(this, AddAlarmActivity::class.java)
+                val intent = Intent(this, AddAlarmsActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 return true

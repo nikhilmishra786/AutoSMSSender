@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Auto SMS Sender</string>
+    <string name="app_name">SMS Sender</string>
 
     <string name="hint_word">Enter you Message</string>
     <string name="button_save">Save</string>
