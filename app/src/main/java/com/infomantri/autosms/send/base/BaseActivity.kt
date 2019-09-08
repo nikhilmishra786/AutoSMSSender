@@ -6,7 +6,9 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.AsyncTask
 import android.os.Build
@@ -14,18 +16,24 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.telephony.SmsManager
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.infomantri.autosms.send.R
+import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.activity.HomeActivity
+import com.infomantri.autosms.send.activity.SettingsActivity
 import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.receiver.DeliverReceiver
 import com.infomantri.autosms.send.receiver.SentReceiver
+import kotlinx.android.synthetic.main.custom_toolbar.*
 
 open class BaseActivity : AppCompatActivity() {
 
@@ -40,7 +48,6 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState)
-
     }
 
     fun getFromDatabase(context: Context): MessageDbRepository {
@@ -52,6 +59,43 @@ open class BaseActivity : AppCompatActivity() {
 
     fun getSharedPreference(context: Context): SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
+
+    fun Toolbar.setToolbar(
+        showBackNav: Boolean = true,
+        titleColor: Int = R.color.title,
+        centerTitle: String? = null,
+        bgColor: Int = R.color.red
+    ) {
+        setSupportActionBar(this)
+
+        toolIvSettings.visibility = if (showBackNav) View.GONE else View.VISIBLE
+        supportActionBar?.apply {
+            title = ""
+            setDisplayHomeAsUpEnabled(showBackNav)
+        }
+
+        if (titleColor == R.color.white) {
+            toolIvSettings.setColorFilter(ContextCompat.getColor(context, R.color.white))
+            toolIvAddAlarm.setColorFilter(ContextCompat.getColor(context, R.color.white))
+
+            supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_tool_back_white)
+        }else {
+            toolIvAddAlarm.setColorFilter(ContextCompat.getColor(context, R.color.orange))
+            toolIvSettings.setColorFilter(ContextCompat.getColor(context, R.color.lightBlue))
+        }
+
+        centerTitle?.let {
+            toolTvTitle?.text = it
+            toolTvTitle?.setTextColor(
+                ContextCompat.getColor(
+                    this@BaseActivity,
+                    titleColor
+                )
+            )
+        }
+
+        toolbar.setBackgroundColor(ContextCompat.getColor(this@BaseActivity, bgColor))
+    }
 
     fun showAlertDialog(deleteMsg: (Boolean) -> Unit) {
         val builder = AlertDialog.Builder(this)

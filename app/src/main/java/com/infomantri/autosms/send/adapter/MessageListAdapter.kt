@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -14,7 +15,7 @@ import com.infomantri.autosms.send.database.Message
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MessageListAdapter(copiedText: (String, String) -> Unit) :
+class MessageListAdapter(copiedText: (String, String, Int) -> Unit) :
     ListAdapter<Message, MessageListAdapter.MsgViewHolder>(DIFF_UTIL) {
 
     val mCopiedText = copiedText
@@ -39,7 +40,7 @@ class MessageListAdapter(copiedText: (String, String) -> Unit) :
         val timeStampItemView: TextView = itemView.findViewById(R.id.tvTimeStamp)
         val onLongClicked = itemView.setOnLongClickListener {
 
-            mCopiedText(msgBodyItemView.text.toString(), msgBodyItemView.text.toString())
+            mCopiedText(msgBodyItemView.text.toString(), msgBodyItemView.text.toString(), -1)
             Log.v("Message_Copied", ">>> msg copied: ${msgBodyItemView.text}")
             return@setOnLongClickListener true
         }
@@ -74,6 +75,10 @@ class MessageListAdapter(copiedText: (String, String) -> Unit) :
                 holder.sendMsgStatusItemView.setTextColor(Color.parseColor("#EF5350"))
             }
         }
+    }
+
+    fun removeAt(position: Int) {
+        mCopiedText(getItem(position).message, getItem(position).message, getItem(position).id)
     }
 
 }

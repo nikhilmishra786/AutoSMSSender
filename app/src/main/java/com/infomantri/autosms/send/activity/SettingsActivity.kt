@@ -14,6 +14,7 @@ import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import com.infomantri.autosms.send.viewmodel.SubscribersViewModel
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.activity_settings.view.*
+import kotlinx.android.synthetic.main.custom_toolbar.*
 
 class SettingsActivity : BaseActivity() {
 
@@ -25,6 +26,7 @@ class SettingsActivity : BaseActivity() {
         setContentView(R.layout.activity_settings)
 
         init()
+        setToolbar()
 
         mSubscribersViewModel = ViewModelProviders.of(this).get(SubscribersViewModel::class.java)
         mMessageViewModel = ViewModelProviders.of(this).get(MessageViewModel::class.java)
@@ -45,6 +47,16 @@ class SettingsActivity : BaseActivity() {
         tvDefaultActiveMobileNo.text = getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "unknown...")
     }
 
+    private fun setToolbar() {
+        toolIvSettings.visibility = View.GONE
+        toolbar.setToolbar(
+            false,
+            titleColor = R.color.darkBlue,
+            centerTitle = "Setting",
+            bgColor = R.color.white
+        )
+    }
+
     private fun setOnClickListener() {
 
         switchWidget1.setOnCheckedChangeListener{buttonView, isChecked ->
@@ -61,6 +73,18 @@ class SettingsActivity : BaseActivity() {
 
         val fab: View = findViewById(R.id.fabSaveMobileNo)
         fab.setOnClickListener {
+            val intent = Intent(this, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
+
+        toolIvAddAlarm.setOnClickListener {
+            val intent = Intent(this, AddAlarmsActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
+
+        toolIvHome.setOnClickListener {
             val intent = Intent(this, HomeActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)

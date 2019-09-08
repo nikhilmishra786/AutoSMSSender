@@ -14,13 +14,20 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
 
     private val liveDataRepository: MessageLiveDataRepository
     val allMessages: LiveData<List<Message>>
+    var messageId: Int = -1
+    val _getMsgById: LiveData<Message>
     val getSentMsgCount: LiveData<List<Message>>
 
     init {
         val msgsDao = MessageRoomDatabase.getDatabase(application).messageLiveDataDao()
-        liveDataRepository = MessageLiveDataRepository(msgsDao)
+        liveDataRepository = MessageLiveDataRepository(msgsDao, messageId)
         allMessages = liveDataRepository.allMessages
+        _getMsgById = liveDataRepository.messageById
         getSentMsgCount = liveDataRepository.getSentMsgCount
+    }
+
+    fun getMsgById(msgId: Int) {
+        messageId = msgId
     }
 
     fun insert(msg: Message) = viewModelScope.launch(Dispatchers.IO) {

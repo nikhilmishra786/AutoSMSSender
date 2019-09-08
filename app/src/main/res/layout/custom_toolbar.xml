@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:elevation="0dp">
+
+    <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/white"
+            android:elevation="0dp"
+            android:theme="@style/ToolbarStyle"
+            app:contentInsetLeft="0dp"
+            app:contentInsetStart="@dimen/margin_16"
+            app:contentInsetStartWithNavigation="0dp"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:titleTextAppearance="@style/Toolbar.TitleText"
+            app:titleTextColor="@color/colorAccent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/toolIvHome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="@dimen/padding_12"
+                app:srcCompat="@drawable/ic_home_white_24dp"
+                android:tint="@color/tealMaterial600"
+                app:tint="@color/darkGrey" />
+
+        <TextView
+                android:id="@+id/toolTvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/omnes_medium"
+                android:textColor="@color/title"
+                android:textSize="@dimen/text_18"
+                android:textStyle="bold"
+                tools:text="SMS Sender" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/toolIvAddAlarm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:padding="@dimen/padding_12"
+                    app:layout_constraintEnd_toStartOf="@id/toolIvSettings"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_add_alarm_white_24dp"
+                    app:tint="@color/darkGrey" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/toolIvSettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:padding="@dimen/padding_12"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_settings"
+                    app:tint="@color/darkGrey"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.appcompat.widget.Toolbar>
+
+</com.google.android.material.appbar.AppBarLayout>

@@ -3,29 +3,19 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:tools="http://schemas.android.com/tools">
+        android:background="@color/LightGrey">
 
-
-    <ImageView
-            android:id="@+id/ivAddReminder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_20"
-            android:src="@drawable/ic_add_alarm_red_64dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <include
+            android:id="@+id/tool"
+            layout="@layout/custom_toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/add_alarm_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_20"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivAddReminder"
-            android:layout_marginBottom="@dimen/margin_20"
-            tools:layout_editor_absoluteX="10dp"
-            />
-
+            app:layout_constraintTop_toBottomOf="@id/tool" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
