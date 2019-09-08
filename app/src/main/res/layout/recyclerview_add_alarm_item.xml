@@ -3,6 +3,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        xmlns:tool="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:padding="@dimen/margin_20">
 
@@ -16,14 +17,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+            android:id="@+id/tvAlarmStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tool:text="20 minutes ago"
+            android:layout_margin="@dimen/margin_20"
+            app:layout_constraintTop_toTopOf="@id/tvAlarmTime"
+            app:layout_constraintEnd_toStartOf="@id/swRepeatAlarm"
+            app:layout_constraintBottom_toBottomOf="@id/tvAlarmTime"
+            app:layout_constraintStart_toEndOf="@id/tvAlarmTime" />
+
     <Switch
             android:id="@+id/swRepeatAlarm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:enabled="true"
             android:backgroundTint="@color/orange"
-            android:foregroundTint="@color/orange"
             android:checked="true"
+            android:enabled="true"
+            android:foregroundTint="@color/orange"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

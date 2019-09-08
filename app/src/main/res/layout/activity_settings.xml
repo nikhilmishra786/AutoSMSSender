@@ -7,9 +7,9 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-    <!--<include-->
-    <!--android:id="@+id/tool"-->
-    <!--layout="@layout/custom_toolbar"/>-->
+    <include
+            android:id="@+id/tool"
+            layout="@layout/custom_toolbar" />
 
     <ScrollView android:layout_width="match_parent"
                 android:layout_height="match_parent"

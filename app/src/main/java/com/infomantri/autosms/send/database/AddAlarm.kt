@@ -8,6 +8,6 @@ data class AddAlarm (
 
     val alarmTimeStamp: Long,
 
-    var repeatAlarm: Boolean,
+    var repeatAlarm: Boolean = false,
 
     @PrimaryKey(autoGenerate = true) var id: Int = 0)

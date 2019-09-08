@@ -10,6 +10,7 @@ import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import android.widget.Toast
 import com.infomantri.autosms.send.R
 import kotlinx.android.synthetic.main.activity_add_message.*
+import kotlinx.android.synthetic.main.custom_toolbar.*
 
 
 class AddMessages : BaseActivity() {
@@ -22,10 +23,20 @@ class AddMessages : BaseActivity() {
         setContentView(R.layout.activity_add_message)
 
         mViewModel = ViewModelProviders.of(this).get(MessageViewModel::class.java)
-        setOnClickListner()
+        setToolbar()
+        setOnClickListener()
     }
 
-    private fun setOnClickListner() {
+    private fun setToolbar() {
+        toolbar.setToolbar(
+            false,
+            titleColor = R.color.orange,
+            centerTitle = "Add Message",
+            bgColor = R.color.white
+        )
+    }
+
+    private fun setOnClickListener() {
 
         val fab: View = findViewById(R.id.fabSaveMessage)
         fab.setOnClickListener {
@@ -53,6 +64,22 @@ class AddMessages : BaseActivity() {
             }
         }
 
+        toolIvAddAlarm.setOnClickListener {
+            val intent = Intent(this, AddAlarmsActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
 
+        toolIvSettings.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
+
+        toolIvHome.setOnClickListener {
+            val intent = Intent(this, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
     }
 }
