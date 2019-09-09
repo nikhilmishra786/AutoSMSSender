@@ -1,5 +1,6 @@
 package com.infomantri.autosms.send.base
 
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -24,6 +25,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.AndroidViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.activity.HomeActivity
@@ -33,6 +36,7 @@ import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.receiver.DeliverReceiver
 import com.infomantri.autosms.send.receiver.SentReceiver
+import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import kotlinx.android.synthetic.main.custom_toolbar.*
 
 open class BaseActivity : AppCompatActivity() {
@@ -71,7 +75,7 @@ open class BaseActivity : AppCompatActivity() {
         toolIvSettings.visibility = if (showBackNav) View.GONE else View.VISIBLE
         supportActionBar?.apply {
             title = ""
-            setDisplayHomeAsUpEnabled(showBackNav)
+//            setDisplayHomeAsUpEnabled(showBackNav)
         }
 
         if (titleColor == R.color.white) {
@@ -79,7 +83,7 @@ open class BaseActivity : AppCompatActivity() {
             toolIvAddAlarm.setColorFilter(ContextCompat.getColor(context, R.color.white))
 
             supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_tool_back_white)
-        }else {
+        } else {
             toolIvAddAlarm.setColorFilter(ContextCompat.getColor(context, R.color.orange))
             toolIvSettings.setColorFilter(ContextCompat.getColor(context, R.color.lightBlue))
         }
@@ -95,6 +99,18 @@ open class BaseActivity : AppCompatActivity() {
         }
 
         toolbar.setBackgroundColor(ContextCompat.getColor(this@BaseActivity, bgColor))
+    }
+
+    fun String.showSnackbar(restoreData: () -> Unit) {
+        val mSnackBar : Snackbar = Snackbar.make(toolbar, this, Snackbar.LENGTH_LONG)
+        mSnackBar.setAction("Undo", object : View.OnClickListener {
+            override fun onClick(p0: View?) {
+                mSnackBar.dismiss()
+                restoreData()
+            }
+        })
+        mSnackBar.show()
+        mSnackBar.setActionTextColor(ContextCompat.getColor(applicationContext,R.color.orange))
     }
 
     fun showAlertDialog(deleteMsg: (Boolean) -> Unit) {
@@ -117,7 +133,7 @@ open class BaseActivity : AppCompatActivity() {
 //        }
         //performing negative action
         builder.setNegativeButton("No") { dialogInterface, which ->
-//            Toast.makeText(applicationContext, "clicked No", Toast.LENGTH_LONG).show()
+            //            Toast.makeText(applicationContext, "clicked No", Toast.LENGTH_LONG).show()
         }
         // Create the AlertDialog
         val alertDialog: AlertDialog = builder.create()
@@ -162,7 +178,11 @@ open class BaseActivity : AppCompatActivity() {
         val notificationManager = context
             .getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("AlarmReminderChannel", "Auto SMS Sender channel", NotificationManager.IMPORTANCE_HIGH).apply {
+            val channel = NotificationChannel(
+                "AlarmReminderChannel",
+                "Auto SMS Sender channel",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
                 description = "Text"
             }
             notificationManager?.createNotificationChannel(channel)
@@ -173,9 +193,13 @@ open class BaseActivity : AppCompatActivity() {
 
     fun sendSMS(context: Context, isMessageSent: Boolean = false) {
         val smsManager = SmsManager.getDefault() as SmsManager
-        Log.v("SmsManager_",">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}")
+        Log.v(
+            "SmsManager_",
+            ">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}"
+        )
 
-        val DEFAULT_MOBILE_NO = getSharedPreference(context).getString(DEFAULT_MOBILE_NO, "9867169318")
+        val DEFAULT_MOBILE_NO =
+            getSharedPreference(context).getString(DEFAULT_MOBILE_NO, "9867169318")
         val IS_DEFAULT = getSharedPreference(context).getBoolean(IS_DEFAULT_NO, true)
 
         BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
@@ -204,9 +228,10 @@ open class BaseActivity : AppCompatActivity() {
                                     context, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT
                                 )
 
-                                val deliveredIntent = Intent(context, DeliverReceiver::class.java).apply {
-                                    putExtra("MESSAGE_DELIVER", msg.id)
-                                }
+                                val deliveredIntent =
+                                    Intent(context, DeliverReceiver::class.java).apply {
+                                        putExtra("MESSAGE_DELIVER", msg.id)
+                                    }
                                 val deliveredPendingIntent = PendingIntent.getBroadcast(
                                     context, 0, deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT
                                 )
@@ -214,7 +239,8 @@ open class BaseActivity : AppCompatActivity() {
                                 val sentPIList = ArrayList<PendingIntent>()
                                 val deliveredPIList = ArrayList<PendingIntent>()
 
-                                getSharedPreference(context).edit().putInt("MESSAGE_ID", msg.id).apply()
+                                getSharedPreference(context).edit().putInt("MESSAGE_ID", msg.id)
+                                    .apply()
 
                                 val msgListParts = smsManager.divideMessage(msg.message)
 //                                msgListParts.iterator().forEach {msg ->
@@ -229,7 +255,8 @@ open class BaseActivity : AppCompatActivity() {
                                     count++
                                 }
                                 MESSAGE_SPLIT_COUNT = count
-                                getSharedPreference(context).edit().putInt("MESSAGE_SPLIT_COUNT", count).apply()
+                                getSharedPreference(context).edit()
+                                    .putInt("MESSAGE_SPLIT_COUNT", count).apply()
 
                                 smsManager.sendMultipartTextMessage(
                                     DEFAULT_MOBILE_NO,
@@ -241,7 +268,11 @@ open class BaseActivity : AppCompatActivity() {
 
                                 Thread.sleep(2 * 1000)
 
-                                if (getSharedPreference(context).getBoolean("IS_SENT_ERROR", false)) {
+                                if (getSharedPreference(context).getBoolean(
+                                        "IS_SENT_ERROR",
+                                        false
+                                    )
+                                ) {
                                     msg.apply {
                                         sent = false
                                         isFailed = true
@@ -269,7 +300,13 @@ open class BaseActivity : AppCompatActivity() {
                         sent = false
                         isFailed = true
                     }
-                    sendNotification(application, 404, "SMS send error!", "Error -> $e", HomeActivity::class.java)
+                    sendNotification(
+                        application,
+                        404,
+                        "SMS send error!",
+                        "Error -> $e",
+                        HomeActivity::class.java
+                    )
                     Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
                 }
             }

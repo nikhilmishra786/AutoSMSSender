@@ -4,17 +4,12 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.TimerFragment
-import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
-import com.infomantri.autosms.send.database.MessageDbRepository
-import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.receiver.AlarmReceiver
 import kotlinx.android.synthetic.main.activity_add_alarm.*
 import java.text.SimpleDateFormat
@@ -46,12 +41,12 @@ class AddAlarmActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarm)
 
-        setOnClickListner()
+        setOnClickListener()
         tvMorningAlarm.text = morningAlarm.formatDate()
         tvNightAlarm.text = nightAlarm.formatDate()
     }
 
-    private fun setOnClickListner() {
+    private fun setOnClickListener() {
 
 
         val fab: View = findViewById(R.id.fabSaveAlarm)

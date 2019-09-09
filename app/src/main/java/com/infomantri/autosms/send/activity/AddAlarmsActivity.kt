@@ -47,6 +47,8 @@ class AddAlarmsActivity : BaseActivity() {
 
     private lateinit var mAlarmView: AddAlarmViewModel
 
+    var alarmData =
+        AddAlarm(System.currentTimeMillis(), id = -1)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,11 +58,10 @@ class AddAlarmsActivity : BaseActivity() {
 
         setToolbar()
         setRecyclerView()
-        setOnClikckListener()
+        setOnClickListener()
     }
 
     private fun setToolbar() {
-        toolIvAddAlarm.visibility = View.GONE
         toolbar.setToolbar(
             false,
             titleColor = R.color.orange,
@@ -70,15 +71,13 @@ class AddAlarmsActivity : BaseActivity() {
     }
 
     private fun setRecyclerView() {
-        val adapter = AddAlarmsListAdapter(repeatAlarm = { isSelected, alarmId ->
-            Toast.makeText(
-                this,
-                ">>> $isSelected",
-                Toast.LENGTH_SHORT
-            ).show()
-            if(alarmId != -1)
+        val adapter = AddAlarmsListAdapter({}, deleteAlarm = { alarmId ->
+            if (alarmId != -1)
                 deleteMsgById(alarmId)
+            else
+                Toast.makeText(this, "Error while deleting", Toast.LENGTH_SHORT).show()
         })
+
         add_alarm_recyclerview.adapter = adapter
         add_alarm_recyclerview.addItemDecoration(
             DividerItemDecoration(
@@ -107,7 +106,7 @@ class AddAlarmsActivity : BaseActivity() {
         })
     }
 
-    private fun setOnClikckListener() {
+    private fun setOnClickListener() {
 
 //        swRepeatAlarm.setOnCheckedChangeListener { compoundButton, isSelected ->
 //            repeatAlarm = isSelected
@@ -201,15 +200,20 @@ class AddAlarmsActivity : BaseActivity() {
                 val addAlarmDao = MessageRoomDatabase.getDatabase(application).addAlarmDao()
                 val repository = AddAlarmRepository(addAlarmDao, msgId)
                 val alarmToDelete = repository.alarmById
+                alarmData = alarmToDelete
                 repository.deleteAlarm(alarmToDelete)
             }
 
             override fun onCompleted() {
-                Toast.makeText(
-                    application,
-                    "Alarm deleted successfully...",
-                    Toast.LENGTH_SHORT
-                ).show()
+                if (alarmData.id != -1) {
+                    "Alarm deleted successfully".showSnackbar(restoreData = {
+                        mAlarmView.insert(
+                            alarmData
+                        )
+                    })
+                } else {
+                    "Error while deleting alarm".showSnackbar { }
+                }
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }

@@ -4,6 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+
         app:elevation="0dp">
 
     <androidx.appcompat.widget.Toolbar
@@ -27,9 +28,18 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
                 android:padding="@dimen/padding_12"
-                app:srcCompat="@drawable/ic_home_white_24dp"
-                android:tint="@color/tealMaterial600"
-                app:tint="@color/darkGrey" />
+                app:srcCompat="@drawable/ic_home_teal_24dp"
+                android:tint="@color/red" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/toolIvBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="@dimen/padding_12"
+                android:tint="@color/red"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_arrow_back_red_24dp" />
 
         <TextView
                 android:id="@+id/toolTvTitle"

@@ -44,14 +44,15 @@ class SettingsActivity : BaseActivity() {
     private fun init() {
         switchWidget1.isChecked = getSharedPreference(this).getBoolean(AppConstants.MOBILE_NO_1, true)
         switchWidget2.isChecked = getSharedPreference(this).getBoolean(AppConstants.MOBILE_NO_2, false)
-        tvDefaultActiveMobileNo.text = getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "unknown...")
+        tvDefaultActiveMobileNo.text = getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "9867169318")
     }
 
     private fun setToolbar() {
-        toolIvSettings.visibility = View.GONE
+        toolIvHome.visibility = View.GONE
+        toolIvBack.visibility = View.VISIBLE
         toolbar.setToolbar(
-            false,
-            titleColor = R.color.darkBlue,
+            true,
+            titleColor = R.color.orange,
             centerTitle = "Setting",
             bgColor = R.color.white
         )
@@ -84,11 +85,10 @@ class SettingsActivity : BaseActivity() {
             startActivity(intent)
         }
 
-        toolIvHome.setOnClickListener {
-            val intent = Intent(this, HomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+        toolIvBack.setOnClickListener{
+            finish()
         }
+
     }
 
     override fun onResume() {

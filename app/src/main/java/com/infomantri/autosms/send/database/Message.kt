@@ -9,7 +9,7 @@ data class Message(
 
     var timeStamp: Long,
 
-    var sent: Boolean,
+    var sent: Boolean = false,
 
     var isFailed: Boolean = false,
 
