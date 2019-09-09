@@ -16,10 +16,11 @@ import com.infomantri.autosms.send.R.layout.recyclerview_add_alarm_item
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AddAlarmsListAdapter(repeatAlarm: (Boolean, Int) -> Unit) :
+class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) -> Unit) :
     ListAdapter<AddAlarm, AddAlarmsListAdapter.AddAlarmsViewHolder>(DIFF_UTIL) {
 
     val mRepeatAlarm = repeatAlarm
+    val mDeleteAlarm = deleteAlarm
 
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<AddAlarm>() {
@@ -39,7 +40,7 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean, Int) -> Unit) :
         var repeatAlarmItemView: Switch = itemView.findViewById(R.id.swRepeatAlarm)
         val alarmStatus: TextView = itemView.findViewById(R.id.tvAlarmStatus)
 
-        val isSelected = repeatAlarmItemView.setOnClickListener{ mRepeatAlarm(repeatAlarmItemView.isChecked, -1) }
+        val isSelected = repeatAlarmItemView.setOnClickListener{ mRepeatAlarm(repeatAlarmItemView.isChecked) }
     }
 
     override fun onCreateViewHolder(
@@ -67,7 +68,7 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean, Int) -> Unit) :
     }
 
     fun removeAt(position: Int) {
-        mRepeatAlarm(getItem(position).repeatAlarm, getItem(position).id)
+        mDeleteAlarm(getItem(position).id)
     }
 
     fun Long.formatDate(): String? {

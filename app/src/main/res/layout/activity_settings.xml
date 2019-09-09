@@ -1,30 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/lightGrey"
         android:orientation="vertical">
 
     <include
             android:id="@+id/tool"
             layout="@layout/custom_toolbar" />
 
-    <ScrollView android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fillViewport="true">
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_20"
+                android:background="@color/white">
 
             <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guideStart"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.05"/>
+                    app:layout_constraintGuide_percent="0.05" />
 
 
             <androidx.constraintlayout.widget.Guideline
@@ -32,7 +35,7 @@
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.95"/>
+                    app:layout_constraintGuide_percent="0.95" />
 
 
             <TextView
@@ -40,11 +43,10 @@
                     style="@style/SettingsTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_32"
                     android:text="Default mob number : "
                     app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:layout_marginTop="@dimen/margin_32"
-            />
+                    app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                     android:id="@+id/tvDefaultActiveMobileNo"
@@ -52,71 +54,66 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    app:layout_constraintStart_toEndOf="@id/tvDefaultMobileNo"
-                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNo"
-                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo"
-                    app:layout_constraintEnd_toEndOf="@id/guideEnd"
-                    tools:text="8424954824"
                     android:textSize="18sp"
-            />
+                    app:layout_constraintEnd_toEndOf="@id/guideEnd"
+                    app:layout_constraintStart_toEndOf="@id/tvDefaultMobileNo"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo"
+                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNo"
+                    tools:text="8424954824" />
 
             <TextView
                     android:id="@+id/tvDefaultMobileNoValue1"
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/text_18"
-                    android:text="8424954824"
-                    app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo"
-                    app:layout_constraintEnd_toStartOf="@id/switchWidget1"
                     android:layout_marginTop="@dimen/margin_32"
-            />
+                    android:text="8424954824"
+                    android:textSize="@dimen/text_18"
+                    app:layout_constraintEnd_toStartOf="@id/switchWidget1"
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNo" />
 
             <Switch
                     android:id="@+id/switchWidget1"
                     android:layout_width="wrap_content"
                     android:layout_height="20dp"
-                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNoValue1"
+                    android:layout_marginEnd="@dimen/text_32"
                     app:layout_constraintBottom_toBottomOf="@id/tvDefaultMobileNoValue1"
                     app:layout_constraintEnd_toEndOf="@id/guideEnd"
-                    android:layout_marginEnd="@dimen/text_32"
-            />
+                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNoValue1" />
 
             <TextView
                     android:id="@+id/tvDefaultMobileNoValue2"
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/text_18"
-                    android:text="9867169318"
-                    android:gravity="start"
-                    app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue1"
-                    app:layout_constraintEnd_toStartOf="@id/switchWidget2"
                     android:layout_marginTop="@dimen/margin_32"
-            />
+                    android:gravity="start"
+                    android:text="9867169318"
+                    android:textSize="@dimen/text_18"
+                    app:layout_constraintEnd_toStartOf="@id/switchWidget2"
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue1" />
 
             <Switch
                     android:id="@+id/switchWidget2"
                     android:layout_width="wrap_content"
                     android:layout_height="20dp"
-                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNoValue2"
+                    android:layout_marginEnd="@dimen/text_32"
                     app:layout_constraintBottom_toBottomOf="@id/tvDefaultMobileNoValue2"
                     app:layout_constraintEnd_toEndOf="@id/guideEnd"
-                    android:layout_marginEnd="@dimen/text_32"
-            />
+                    app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNoValue2" />
 
             <!--<androidx.appcompat.widget.AppCompatImageView-->
-                    <!--android:id="@+id/ivSettingEdit"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--app:srcCompat="@drawable/ic_edit"-->
-                    <!--android:padding="@dimen/padding_16"-->
-                    <!--android:background="?selectableItemBackgroundBorderless"-->
-                    <!--app:layout_constraintEnd_toEndOf="@id/guideEnd"-->
-                    <!--app:layout_constraintTop_toTopOf="@+id/tvDefaultMobileNoValue"-->
-                    <!--app:layout_constraintBottom_toBottomOf="@+id/tvDefaultMobileNoValue"/>-->
+            <!--android:id="@+id/ivSettingEdit"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--app:srcCompat="@drawable/ic_edit"-->
+            <!--android:padding="@dimen/padding_16"-->
+            <!--android:background="?selectableItemBackgroundBorderless"-->
+            <!--app:layout_constraintEnd_toEndOf="@id/guideEnd"-->
+            <!--app:layout_constraintTop_toTopOf="@+id/tvDefaultMobileNoValue"-->
+            <!--app:layout_constraintBottom_toBottomOf="@+id/tvDefaultMobileNoValue"/>-->
 
 
             <TextView
@@ -124,87 +121,81 @@
                     style="@style/SettingsTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_32"
                     android:text="Total Messages Sent : "
                     app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue2"
-                    android:layout_marginTop="@dimen/margin_32"
-            />
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue2" />
 
             <TextView
                     android:id="@+id/tvTotalMsgSentValue"
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="24"
-                    app:layout_constraintTop_toTopOf="@+id/tvTotalMsgSent"
+                    android:layout_marginStart="@dimen/margin_12"
                     app:layout_constraintBottom_toBottomOf="@+id/tvTotalMsgSent"
                     app:layout_constraintStart_toEndOf="@+id/tvTotalMsgSent"
-                    android:layout_marginStart="@dimen/margin_12"
-            />
+                    app:layout_constraintTop_toTopOf="@+id/tvTotalMsgSent"
+                    tools:text="24" />
 
             <TextView
                     android:id="@+id/tvMsgSuccess"
                     style="@style/SettingsTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_32"
                     android:text="Success : "
                     app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvTotalMsgSent"
-                    android:layout_marginTop="@dimen/margin_32"
-            />
+                    app:layout_constraintTop_toBottomOf="@id/tvTotalMsgSent" />
 
             <TextView
                     android:id="@+id/tvMsgSuccessValue"
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="18"
-                    app:layout_constraintTop_toTopOf="@+id/tvMsgSuccess"
+                    android:layout_marginStart="@dimen/margin_12"
                     app:layout_constraintBottom_toBottomOf="@+id/tvMsgSuccess"
                     app:layout_constraintStart_toEndOf="@+id/tvMsgSuccess"
-                    android:layout_marginStart="@dimen/margin_12"
-            />
+                    app:layout_constraintTop_toTopOf="@+id/tvMsgSuccess"
+                    tools:text="18" />
 
             <TextView
                     android:id="@+id/tvMsgFailure"
                     style="@style/SettingsTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_32"
                     android:text="Failure : "
                     app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvMsgSuccess"
-                    android:layout_marginTop="@dimen/margin_32"
-            />
+                    app:layout_constraintTop_toBottomOf="@id/tvMsgSuccess" />
 
             <TextView
                     android:id="@+id/tvMsgFailureValue"
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="6"
-                    app:layout_constraintTop_toTopOf="@+id/tvMsgFailure"
+                    android:layout_marginStart="@dimen/margin_12"
                     app:layout_constraintBottom_toBottomOf="@+id/tvMsgFailure"
                     app:layout_constraintStart_toEndOf="@+id/tvMsgFailure"
-                    android:layout_marginStart="@dimen/margin_12"
-            />
+                    app:layout_constraintTop_toTopOf="@+id/tvMsgFailure"
+                    tools:text="6" />
 
 
             <!--<EditText-->
-                    <!--android:id="@+id/etEnterMobileNo"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_marginBottom="60dp"-->
-                    <!--android:padding="@dimen/text_20"-->
-                    <!--app:layout_constraintBottom_toBottomOf="parent"-->
-                    <!--app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--app:layout_constraintStart_toStartOf="parent"-->
-                    <!--android:background="@color/colorTeal"-->
-                    <!--android:textColor="@color/white"-->
-                    <!--android:textSize="@dimen/margin_20"-->
-                    <!--android:hint="Enter Mobile Number"-->
-                    <!--android:textColorHint="@color/white"-->
-                    <!--android:maxLength="10"-->
-                    <!--android:inputType="phone"-->
+            <!--android:id="@+id/etEnterMobileNo"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginBottom="60dp"-->
+            <!--android:padding="@dimen/text_20"-->
+            <!--app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--android:background="@color/colorTeal"-->
+            <!--android:textColor="@color/white"-->
+            <!--android:textSize="@dimen/margin_20"-->
+            <!--android:hint="Enter Mobile Number"-->
+            <!--android:textColorHint="@color/white"-->
+            <!--android:maxLength="10"-->
+            <!--android:inputType="phone"-->
             <!--/>-->
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -212,10 +203,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/margin_20"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
                     android:foreground="@drawable/ic_save_white_24dp"
-            />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

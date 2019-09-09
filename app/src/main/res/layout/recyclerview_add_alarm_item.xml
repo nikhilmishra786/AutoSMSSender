@@ -5,6 +5,7 @@
         android:layout_height="wrap_content"
         xmlns:tool="http://schemas.android.com/tools"
         android:orientation="vertical"
+        android:background="@color/white"
         android:padding="@dimen/margin_20">
 
     <TextView

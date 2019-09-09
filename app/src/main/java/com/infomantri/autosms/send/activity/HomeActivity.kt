@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Message
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -88,9 +89,10 @@ class HomeActivity : BaseActivity() {
 
     private fun setRecyclerView() {
         val adapter = MessageListAdapter(copiedText = { copiedText, msg, id ->
-            copyToClipBoard(copiedText, msg)
             if (id != -1) {
                 deleteMsgById(id)
+            } else {
+                copyToClipBoard(copiedText, msg)
             }
         })
         recyclerview.adapter = adapter
@@ -118,7 +120,7 @@ class HomeActivity : BaseActivity() {
         val clipBoardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = ClipData.newPlainText("MESSAGE", copiedText)
         clipBoardManager.setPrimaryClip(clipData)
-        Toast.makeText(this, "Message copied to clipboard...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Message copied to clipboard", Toast.LENGTH_SHORT).show()
 
 //        showAlertDialog(deleteMsg = {
 //            Log.v("DIALOG", ">>> return from Alert Dialog 1...")
@@ -135,18 +137,26 @@ class HomeActivity : BaseActivity() {
                 val msgDao = MessageRoomDatabase.getDatabase(application).messageDbDao()
                 val repository = MessageDbRepository(msgDao, msgId)
                 val message = repository.messageById
+                messageData = message
                 repository.deleteMessage(message)
             }
 
             override fun onCompleted() {
-                Toast.makeText(
-                    application,
-                    "Message deleted successfully...",
-                    Toast.LENGTH_SHORT
-                ).show()
+                if (messageData.message != "error") {
+                    "Message deleted successfully".showSnackbar(restoreData = {
+                        mViewModel.insert(
+                            messageData
+                        )
+                    })
+                }else {
+                    "Error while deleting message".showSnackbar {  }
+                }
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
+
+    var messageData =
+        com.infomantri.autosms.send.database.Message("error", System.currentTimeMillis())
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
 //        menuInflater.inflate(R.menu.menu_main, menu)
