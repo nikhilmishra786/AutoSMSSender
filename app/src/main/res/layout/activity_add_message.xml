@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/LightGrey">
@@ -10,49 +11,33 @@
             android:id="@+id/tool"
             layout="@layout/custom_toolbar" />
 
-    <Button
-        android:id="@+id/btnSendSMS"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:padding="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tool"
-        android:text="Send SMS"
-        android:textSize="14sp"
-        android:background="@color/colorLightPink"
-        android:textColor="@color/white"
-        />
-
 
     <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilEnterFeedback"
+            style="@style/LoginEditTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:counterEnabled="true"
-            app:counterMaxLength="660"
-            android:layout_marginTop="@dimen/margin_12"
-            style="@style/LoginEditTextInputLayout"
-            android:hint="Add Message..."
-            app:layout_goneMarginTop="40dp"
             android:layout_marginStart="@dimen/margin_20"
             android:layout_marginEnd="@dimen/margin_20"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:background="@color/white"
+            android:hint="Add Message..."
             android:textColor="@color/colorLightPink"
             android:textColorHint="@color/colorLightPink"
-            android:layout_marginBottom="@dimen/margin_20"
-            app:layout_constraintTop_toBottomOf="@id/btnSendSMS"
-            android:background="@color/white">
+            app:counterEnabled="true"
+            app:counterMaxLength="660"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tool"
+            android:layout_marginTop="120dp"
+            tools:layout_editor_absoluteY="139dp">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEnterMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start|top"
-                android:minLines="10"
-                android:maxLines="20"/>
+                android:maxLines="20"
+                android:minLines="10" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
