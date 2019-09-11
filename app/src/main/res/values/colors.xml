@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#FF7043</color>
-    <color name="colorPrimaryDark">#F4511E</color>
+    <color name="colorPrimaryDark">#E65100</color>
     <color name="colorAccent">#D81B60</color>
 
     <color name="colorTeal">#4DB6AC</color>
@@ -17,7 +17,7 @@
     <color name="darkOrange">#F4511E</color>
     <color name="red">#EF5350</color>
     <color name="favRedColor">#FF2242</color>
-    <color name="lightYellow">#FFA726</color>
+    <color name="lightYellow">#FFCA28</color>
     <color name="lightBlue">#29B6F6</color>
     <color name="darkBlue">#1E88E5</color>
     <color name="lightGrey">#EBE6E6</color>

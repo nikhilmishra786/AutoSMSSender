@@ -49,21 +49,6 @@ class AddMessages : BaseActivity() {
             startActivity(intent)
         }
 
-        btnSendSMS.setOnClickListener {
-            //            val intent = Intent(this, AddAlarmActivity::class.java)
-//            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-//            startActivity(intent)        }
-
-            if (mCount == 3) {
-                sendSMS(application)
-                mCount++
-            }
-            else {
-                mCount++
-                Toast.makeText(this,"Clicked: ${mCount}", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         toolIvAddAlarm.setOnClickListener {
             val intent = Intent(this, AddAlarmsActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
