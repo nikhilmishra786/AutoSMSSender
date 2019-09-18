@@ -17,6 +17,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.base.BaseActivity
+import com.infomantri.autosms.send.util.sendSMS
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -31,7 +32,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         context?.let {
             Log.e("REMINDER", ">>> Reminder recevied 1 ->>>>")
-            BaseActivity().sendSMS(context)
+            sendSMS(context)
             sendNotification(context, reminderId, title, subTitle, HomeActivity::class.java)
 
 //            playRingtone(context)

@@ -7,7 +7,6 @@ import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -22,6 +21,7 @@ import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.database.*
 import com.infomantri.autosms.send.receiver.AlarmReceiver
+import com.infomantri.autosms.send.util.formatDate
 import com.infomantri.autosms.send.viewmodel.AddAlarmViewModel
 import kotlinx.android.synthetic.main.activity_add_alarms.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
@@ -30,19 +30,10 @@ import java.util.*
 
 class AddAlarmsActivity : BaseActivity() {
 
-    private var repeatAlarm = false
-    val requestCode = 9999
-
     private val addAlarmCalendar by lazy {
         Calendar.getInstance().apply {
             set(Calendar.SECOND, 0)
         }
-    }
-
-    private var addAlarm: AddAlarm = AddAlarm(1)
-
-    private val alarmList by lazy {
-        mutableListOf(addAlarm)
     }
 
     private lateinit var mAlarmView: AddAlarmViewModel
@@ -150,14 +141,16 @@ class AddAlarmsActivity : BaseActivity() {
                 set(Calendar.MINUTE, minute)
             }
             mAlarmView.insert(AddAlarm(addAlarmCalendar.timeInMillis))
-            val date = SimpleDateFormat(
-                "MMM dd, yyyy hh:mm a",
-                Locale.US
-            ).format(alarmList.get(0).alarmTimeStamp)
+            setAlarm(
+                addAlarmCalendar,
+                ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
+                getAlarmTitle(addAlarmCalendar.timeInMillis)
+            )
+            Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
         }
     }
 
-    private fun setAlarm(calendar: Calendar, requestCode: Int, title: String) {
+    private fun setAlarm(calendar: Calendar, requestCode: Int, title: String = "") {
 
         val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
             putExtra("reminder_timestamp", calendar.timeInMillis)
@@ -202,6 +195,7 @@ class AddAlarmsActivity : BaseActivity() {
                 val alarmToDelete = repository.alarmById
                 alarmData = alarmToDelete
                 repository.deleteAlarm(alarmToDelete)
+                cancelAlarm((alarmToDelete.alarmTimeStamp).toInt() % 10 * 1000)
             }
 
             override fun onCompleted() {
@@ -209,6 +203,13 @@ class AddAlarmsActivity : BaseActivity() {
                     "Alarm deleted successfully".showSnackbar(restoreData = {
                         mAlarmView.insert(
                             alarmData
+                        )
+                        val calendar = Calendar.getInstance()
+                        calendar.timeInMillis = alarmData.alarmTimeStamp
+                        setAlarm(
+                            calendar = calendar,
+                            requestCode = ((alarmData.alarmTimeStamp).toInt() % 10 * 1000),
+                            title = getAlarmTitle(alarmData.alarmTimeStamp)
                         )
                     })
                 } else {
@@ -218,9 +219,29 @@ class AddAlarmsActivity : BaseActivity() {
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
-    fun Calendar.formatDate(): String? {
-        val simpleDateFormatter = SimpleDateFormat("hh:mm a", Locale.US)
-        return simpleDateFormatter.format(time)
+    private fun cancelAlarm(requestCode: Int) {
+
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AlarmReceiver::class.java)
+        val pendingIntent =
+            PendingIntent.getBroadcast(this, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        alarmManager.cancel(pendingIntent)
+        Log.v("NEXT_ALARM", ">>> Next Alarm : ${alarmManager.nextAlarmClock}")
+    }
+
+    private fun getAlarmTitle(timeStamp: Long): String {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timeStamp
+
+        return when (calendar.get(Calendar.HOUR_OF_DAY)) {
+
+            in 0..3 -> "Mid Night"
+            in 4..11 -> "Good Morning"
+            in 12..15 -> "Good After Noon"
+            in 16..20 -> "Good Evening"
+            in 21..23 -> "Good Night"
+            else -> "Good Day"
+        }
     }
 
 }

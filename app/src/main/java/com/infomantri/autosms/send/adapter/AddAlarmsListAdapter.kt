@@ -2,6 +2,7 @@ package com.infomantri.autosms.send.adapter
 
 import android.graphics.Color
 import android.text.format.DateUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,15 +57,22 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) ->
     override fun onBindViewHolder(holder: AddAlarmsViewHolder, position: Int) {
 
         val current = getItem(position)
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = current.alarmTimeStamp
+        calendar.apply {
+            calendar.formatDate()
+        }
+
         holder.alarmItemView.text = current.alarmTimeStamp.formatDate()
         holder.repeatAlarmItemView.isSelected = current.repeatAlarm
-        holder.alarmStatus.text = DateUtils.getRelativeTimeSpanString(current.alarmTimeStamp)
+        holder.alarmStatus.text = DateUtils.getRelativeTimeSpanString(calendar.timeInMillis)
 
         if (DateUtils.getRelativeTimeSpanString(current.alarmTimeStamp).contains("ago")) {
             holder.alarmStatus.setTextColor(Color.parseColor("#E53935"))
         }else {
             holder.alarmStatus.setTextColor(Color.parseColor("#43A047"))
         }
+        Log.v("ALARM_STATUS", ">>> ${DateUtils.getRelativeTimeSpanString(calendar.timeInMillis)} Time: ${calendar.timeInMillis.formatDate()}")
     }
 
     fun removeAt(position: Int) {
@@ -74,6 +82,11 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) ->
     fun Long.formatDate(): String? {
         val simpleDateFormatter = SimpleDateFormat("hh:mm a", Locale.US)
         return simpleDateFormatter.format(this)
+    }
+
+    fun Calendar.formatDate(): String? {
+        val simpleDateFormatter = SimpleDateFormat("hh:mm a", Locale.US)
+        return simpleDateFormatter.format(time)
     }
 
 }

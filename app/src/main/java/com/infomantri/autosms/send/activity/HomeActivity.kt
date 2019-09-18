@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.SimpleAdapter
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -25,6 +26,10 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.auth.api.phone.SmsRetrieverClient
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.adapter.MessageListAdapter
@@ -54,6 +59,20 @@ class HomeActivity : BaseActivity() {
         checkForPermissions()
         setRecyclerView()
 //        observeDeleteMessage()
+        startSmsRetriever()
+    }
+
+    private fun startSmsRetriever() {
+        val appSignatureHelper = AppSignatureHelper(this)
+
+        val client = SmsRetriever.getClient(this)
+
+        val task = client.startSmsRetriever()
+
+        task.addOnSuccessListener { _ -> Log.d("CodeActivity", "Sms listener started!") }
+        task.addOnFailureListener { e ->
+            Log.e("CodeActivity", "Failed to start sms retriever: ${e.message}")
+        }
     }
 
     private fun setToolbar() {
@@ -148,8 +167,8 @@ class HomeActivity : BaseActivity() {
                             messageData
                         )
                     })
-                }else {
-                    "Error while deleting message".showSnackbar {  }
+                } else {
+                    "Error while deleting message".showSnackbar { }
                 }
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
@@ -225,7 +244,11 @@ class HomeActivity : BaseActivity() {
             // No explanation needed, we can request the permission.
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE),
+                arrayOf(
+                    Manifest.permission.SEND_SMS,
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG
+                ),
                 REQUEST_PERMISSION_SEND_SMS
             )
 

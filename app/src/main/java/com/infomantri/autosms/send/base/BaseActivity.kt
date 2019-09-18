@@ -11,13 +11,17 @@ import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.provider.CallLog
+import android.provider.ContactsContract
 import android.telephony.SmsManager
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
@@ -32,12 +36,15 @@ import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.activity.SettingsActivity
 import com.infomantri.autosms.send.asynctask.BaseAsyncTask
+import com.infomantri.autosms.send.database.CallDetails
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.receiver.DeliverReceiver
 import com.infomantri.autosms.send.receiver.SentReceiver
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import kotlinx.android.synthetic.main.custom_toolbar.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 open class BaseActivity : AppCompatActivity() {
 
@@ -52,13 +59,6 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState)
-    }
-
-    fun getFromDatabase(context: Context): MessageDbRepository {
-
-        val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
-
-        return MessageDbRepository(msgDao)
     }
 
     fun getSharedPreference(context: Context): SharedPreferences =
@@ -142,202 +142,70 @@ open class BaseActivity : AppCompatActivity() {
         alertDialog.show()
     }
 
-    fun sendNotification(
-        context: Context, id: Int, title: String,
-        subTitle: String,
-        activity: Class<*>
-    ) {
+    fun getCallsDetails(): ArrayList<CallDetails> {
 
-        val intent = Intent(context, activity)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        intent.action = "" + Math.random()
+        val callDetails = ArrayList<CallDetails>()
+        val contentUri = CallLog.Calls.CONTENT_URI
 
-        val pendingIntent = PendingIntent.getActivity(
-            context, 2 /* Request code */, intent,
-            PendingIntent.FLAG_CANCEL_CURRENT
-        )
+        try {
+            val cursor = contentResolver.query(contentUri, null, null, null, null)
+            cursor?.let {
+                val nameUri = cursor.getColumnIndex(CallLog.Calls.CACHED_LOOKUP_URI)
+                val number = cursor.getColumnIndex(CallLog.Calls.NUMBER)
+                val duration = cursor.getColumnIndex(CallLog.Calls.DURATION)
+                val date = cursor.getColumnIndex(CallLog.Calls.DATE)
+                val type = cursor.getColumnIndex(CallLog.Calls.TYPE)
 
-        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-
-        val notificationBuilder =
-            NotificationCompat.Builder(context, "AlarmReminderChannel")
-                .setSmallIcon(R.drawable.ic_sms_launcher_icon_108x108)
-                .setLargeIcon(
-                    BitmapFactory.decodeResource(
-                        context.resources,
-                        R.mipmap.ic_launcher_round
-                    )
-                )
-                .setContentTitle(title)
-                .setContentText(subTitle)
-                .setSound(defaultSoundUri)
-                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-
-        val notificationManager = context
-            .getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "AlarmReminderChannel",
-                "Auto SMS Sender channel",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Text"
+                if (cursor.moveToFirst()) {
+                    do {
+                        val callType = when (cursor.getInt(type)) {
+                            CallLog.Calls.INCOMING_TYPE -> "INCOMING"
+                            CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
+                            CallLog.Calls.MISSED_TYPE -> "MISSED"
+                            CallLog.Calls.REJECTED_TYPE -> "REJECTED"
+                            else -> "NOT_DEFINED"
+                        }
+                        val phoneNumber = cursor.getString(number)
+                        val callerNameUri = cursor.getString(nameUri)
+                        val callDate = cursor.getString(date)
+                        val callDayTime = Date(callDate.toLong()).toString()
+                        val callDuration = cursor.getString(duration)
+                        callDetails.add(
+                            CallDetails(
+                                getCallerName(callerNameUri),
+                                phoneNumber,
+                                callDuration,
+                                callType,
+                                callDayTime
+                            )
+                        )
+                    } while (cursor.moveToNext())
+                }
+                cursor.close()
             }
-            notificationManager?.createNotificationChannel(channel)
+        } catch (e: SecurityException) {
+            Toast.makeText(this, "User denied permission", Toast.LENGTH_SHORT).show()
         }
-
-        notificationManager?.notify(id, notificationBuilder.build())
+        return callDetails
     }
 
-    fun sendSMS(context: Context, isMessageSent: Boolean = false) {
-        val smsManager = SmsManager.getDefault() as SmsManager
-        Log.v(
-            "SmsManager_",
-            ">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}"
-        )
+    fun getCallerName(callerNameUri: String?): String {
+        return if (callerNameUri != null) {
 
-        val DEFAULT_MOBILE_NO =
-            getSharedPreference(context).getString(DEFAULT_MOBILE_NO, "9867169318")
-        val IS_DEFAULT = getSharedPreference(context).getBoolean(IS_DEFAULT_NO, true)
+            val cursor = contentResolver.query(Uri.parse(callerNameUri), null, null, null, null)
 
-        BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
-            override fun onStarted() {
-                val repository = getFromDatabase(context)
-                val allMessages = repository.allMessages
-                var index = 0
-                var mSentCount = 0
-
-                try {
-                    if (isMessageSent) {
-                        updateDeliverStatus(context)
-                    } else {
-                        allMessages.iterator().forEach { msg ->
-                            if (!msg.sent && mSentCount < 1) {
-
-                                val sentIntent = Intent(context, SentReceiver::class.java).apply {
-                                    putExtra("MESSAGE_SENT", msg.id)
-                                    putExtra("reminder_timestamp", System.currentTimeMillis())
-                                    putExtra("reminder_id", 6)
-                                    putExtra("reminder_title", "Message Sent Successfully...")
-                                }
-                                sentIntent.action = "message_sent"
-
-                                val sentPendingIntent = PendingIntent.getBroadcast(
-                                    context, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                                )
-
-                                val deliveredIntent =
-                                    Intent(context, DeliverReceiver::class.java).apply {
-                                        putExtra("MESSAGE_DELIVER", msg.id)
-                                    }
-                                val deliveredPendingIntent = PendingIntent.getBroadcast(
-                                    context, 0, deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                                )
-
-                                val sentPIList = ArrayList<PendingIntent>()
-                                val deliveredPIList = ArrayList<PendingIntent>()
-
-                                getSharedPreference(context).edit().putInt("MESSAGE_ID", msg.id)
-                                    .apply()
-
-                                val msgListParts = smsManager.divideMessage(msg.message)
-//                                msgListParts.iterator().forEach {msg ->
-//                                    Log.v("DIVIDE_MESSAGE", ">>> divide Msg: $msg\n")
-//                                    deliverPIList.add(deliveredPendingIntent)
-//                                }
-                                var count = 0
-
-                                repeat(msgListParts.size) {
-                                    sentPIList.add(count, sentPendingIntent)
-                                    deliveredPIList.add(count, deliveredPendingIntent)
-                                    count++
-                                }
-                                MESSAGE_SPLIT_COUNT = count
-                                getSharedPreference(context).edit()
-                                    .putInt("MESSAGE_SPLIT_COUNT", count).apply()
-
-                                smsManager.sendMultipartTextMessage(
-                                    DEFAULT_MOBILE_NO,
-                                    null,
-                                    msgListParts,
-                                    sentPIList,
-                                    deliveredPIList
-                                )
-
-                                Thread.sleep(2 * 1000)
-
-                                if (getSharedPreference(context).getBoolean(
-                                        "IS_SENT_ERROR",
-                                        false
-                                    )
-                                ) {
-                                    msg.apply {
-                                        sent = false
-                                        isFailed = true
-                                    }
-                                    repository.updateMessage(msg)
-                                    Log.v(
-                                        "IS_SENT_ERROR",
-                                        ">>> received an Error!... from sentReceiver() msg: ${msg.message} -> sent Error: ${msg.isFailed}..."
-                                    )
-                                }
-                                mSentCount++
-                                if (mSentCount == 1)
-                                    return@forEach
-                            }
-                            index++
-//                            Log.v(
-//                                "ALL_MESSAGES",
-//                                ">>> all Msg ${msg.message} -> sent: ${msg.sent} -> isFailed: ${msg.isFailed}"
-//                            )
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    allMessages[index].apply {
-                        sent = false
-                        isFailed = true
-                    }
-                    sendNotification(
-                        application,
-                        404,
-                        "SMS send error!",
-                        "Error -> $e",
-                        HomeActivity::class.java
-                    )
-                    Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
+            var name = ""
+            if ((cursor?.count ?: 0 > 0)) {
+                while (cursor != null && cursor.moveToNext()) {
+                    name =
+                        cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
                 }
             }
-
-            override fun onCompleted() {
-            }
-        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-
-    }
-
-    fun updateDeliverStatus(context: Context) {
-        Log.v("MSG_DELIVERED", ">>> updateDeliverStatus Running AsyncTask onStarted()...")
-//                val messageId = intent?.getIntExtra("MESSAGE_DELIVER",-1)
-
-        val messageId = getSharedPreference(context).getInt("MESSAGE_ID", -1)
-        messageId.let {
-            Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $messageId")
-            val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
-            val repository = MessageDbRepository(msgDao, messageId)
-
-            val message = repository.messageById
-            message.apply {
-                sent = true
-            }
-            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
-            repository.updateMessage(message)
-
-            Log.v(
-                "MSG_DELIVERY_STATUS",
-                ">>> Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
-            )
+            cursor?.close()
+            return name
+        } else {
+            "Not a contact!"
         }
     }
+
 }

@@ -15,7 +15,10 @@ data class Message(
 
     var sentCount: Int = 0,
 
-    @PrimaryKey(autoGenerate = true) var id: Int = 0)
+    var isClientRequested: Boolean = false,
+
+    @PrimaryKey(autoGenerate = true) var id: Int = 0
+)
 
 
 // Here we have used Parcelable with @Parcelise Annotation + Main thing is to Add Apply{ Extentions } in App.Build
