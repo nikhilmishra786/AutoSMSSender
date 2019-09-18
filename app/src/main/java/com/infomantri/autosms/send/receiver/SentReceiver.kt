@@ -22,6 +22,8 @@ import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
+import com.infomantri.autosms.send.util.sendNotification
+import com.infomantri.autosms.send.util.sendSMS
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -68,7 +70,7 @@ class SentReceiver : BroadcastReceiver() {
                     if(MESSAGE_SPLIT_COUNT == SENT_MESSAGE_COUNT) {
                         toast(context, "Message sent successfully...", false)
                         sendNotification(context, reminderId, title, "Count: $SENT_MESSAGE_COUNT Time: ${DateUtils.getRelativeTimeSpanString(totalSentTimeTaken)}}", HomeActivity::class.java)
-                        BaseActivity().sendSMS(context, true)
+                        sendSMS(context, isMessageSent = true)
                         sharedPref.edit().putInt("SENT_MESSAGE_COUNT", 0).apply()
                     }
                 }
@@ -94,8 +96,8 @@ class SentReceiver : BroadcastReceiver() {
                     if (intent?.action.equals("message_sent") && (MESSAGE_SPLIT_COUNT == SENT_MESSAGE_COUNT)) {
                         Log.v("RESULT_CANCELED", ">>> STATUS_ON_ICC_SENT: ${SmsManager.STATUS_ON_ICC_SENT}")
                         toast(context, "Message sent successfully...", false)
-                        sendNotification(context, reminderId, title, "Activity.RESULT_CANCELED sentCount: $SENT_MESSAGE_COUNT Time: ${DateUtils.getRelativeTimeSpanString(totalSentTimeTaken)}", HomeActivity::class.java)
-                        BaseActivity().sendSMS(context, true)
+                        sendNotification(context, reminderId, title, "RESULT_CANCELED sentCount: $SENT_MESSAGE_COUNT Time: ${System.currentTimeMillis()}", HomeActivity::class.java)
+                        sendSMS(context, true)
                         sharedPref.edit().putInt("SENT_MESSAGE_COUNT", 0).apply()
                     }
                 }
@@ -111,55 +113,6 @@ class SentReceiver : BroadcastReceiver() {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         Log.v("SMS_SENT_OnReceive", msg)
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("IS_SENT_ERROR", isSentFailed).apply()
-    }
-
-    private fun sendNotification(
-        context: Context, id: Int, title: String,
-        subTitle: String,
-        activity: Class<*>
-    ) {
-
-        val intent = Intent(context, activity)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        intent.action = "" + Math.random()
-
-        val pendingIntent = PendingIntent.getActivity(
-            context, 2 /* Request code */, intent,
-            PendingIntent.FLAG_CANCEL_CURRENT
-        )
-
-        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-
-        val notificationBuilder =
-            NotificationCompat.Builder(context, "AlarmReminderChannel")
-                .setSmallIcon(R.drawable.ic_sms_launcher_icon_108x108)
-//                .setLargeIcon(
-//                    BitmapFactory.decodeResource(
-//                        context.resources,
-//                        R.mipmap.ic_launcher_round
-//                    )
-//                )
-                .setContentTitle(title)
-                .setContentText(subTitle)
-                .setSound(defaultSoundUri)
-                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-
-        val notificationManager = context
-            .getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "AlarmReminderChannel",
-                "Auto SMS Sender channel",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Text"
-            }
-            notificationManager?.createNotificationChannel(channel)
-        }
-
-        notificationManager?.notify(id, notificationBuilder.build())
     }
 
     fun Calendar.formatDate(): String? {

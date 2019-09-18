@@ -45,6 +45,11 @@ class SettingsActivity : BaseActivity() {
         switchWidget1.isChecked = getSharedPreference(this).getBoolean(AppConstants.MOBILE_NO_1, true)
         switchWidget2.isChecked = getSharedPreference(this).getBoolean(AppConstants.MOBILE_NO_2, false)
         tvDefaultActiveMobileNo.text = getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "9867169318")
+
+        getCallsDetails().iterator().forEach {callLog ->
+            if (callLog.name == "Nikhil 4g")
+            tvMsgFailureValue.text = callLog.name.plus(" ${callLog.number} type: ${callLog.type} ${callLog.duration}")
+        }
     }
 
     private fun setToolbar() {

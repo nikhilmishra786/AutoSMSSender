@@ -1,23 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/LightGrey">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/LightGrey"
+        android:orientation="vertical">
 
     <include
             android:id="@+id/tool"
             layout="@layout/custom_toolbar" />
 
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvAuthorList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin_10"
+            android:layout_marginTop="@dimen/margin_20"
+            android:orientation="horizontal"
+            android:padding="5dp"
+            android:paddingHorizontal="@dimen/margin_10"
+            app:layout_constraintTop_toBottomOf="@id/tool" />
 
     <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilEnterFeedback"
+            android:id="@+id/tilEnterMessage"
             style="@style/LoginEditTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="@dimen/margin_20"
+            android:layout_marginTop="@dimen/margin_30"
             android:layout_marginEnd="@dimen/margin_20"
             android:background="@color/white"
             android:hint="Add Message..."
@@ -27,8 +38,7 @@
             app:counterMaxLength="660"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tool"
-            android:layout_marginTop="120dp"
+            app:layout_constraintTop_toBottomOf="@id/rvAuthorList"
             tools:layout_editor_absoluteY="139dp">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -42,16 +52,13 @@
     </com.google.android.material.textfield.TextInputLayout>
 
 
-
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabSaveMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:foreground="@drawable/ic_save_white_24dp"
-        android:layout_margin="@dimen/margin_20"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
+            android:id="@+id/fabSaveMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_20"
+            android:foreground="@drawable/ic_save_white_24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

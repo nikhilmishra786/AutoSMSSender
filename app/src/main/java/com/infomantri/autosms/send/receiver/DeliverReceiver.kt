@@ -17,6 +17,7 @@ import androidx.preference.PreferenceManager
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.base.BaseActivity
+import com.infomantri.autosms.send.util.sendSMS
 
 class DeliverReceiver: BroadcastReceiver() {
 
@@ -42,7 +43,7 @@ class DeliverReceiver: BroadcastReceiver() {
             when(resultCode) {
 
                 Activity.RESULT_OK -> {
-                    BaseActivity().sendSMS(context, true)
+                    sendSMS(context, isMessageSent = true)
                     sendNotification(context, 123456, "Message Delivered", "Message delivered Count: $DELIVERED_MESSAGE_COUNT Time: ${DateUtils.getRelativeTimeSpanString(totalDeliveredTimeTaken)}", HomeActivity::class.java)
                 }
 
