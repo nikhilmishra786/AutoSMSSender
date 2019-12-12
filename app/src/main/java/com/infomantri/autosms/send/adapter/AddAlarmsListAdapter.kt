@@ -17,7 +17,7 @@ import com.infomantri.autosms.send.R.layout.recyclerview_add_alarm_item
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) -> Unit) :
+class AddAlarmsListAdapter(repeatAlarm: (Boolean, Long, Int) -> Unit, deleteAlarm: (Int) -> Unit) :
     ListAdapter<AddAlarm, AddAlarmsListAdapter.AddAlarmsViewHolder>(DIFF_UTIL) {
 
     val mRepeatAlarm = repeatAlarm
@@ -38,10 +38,9 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) ->
 
     inner class AddAlarmsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val alarmItemView: TextView = itemView.findViewById(R.id.tvAlarmTime)
-        var repeatAlarmItemView: Switch = itemView.findViewById(R.id.swRepeatAlarm)
+        var alarmSwithItemView: Switch = itemView.findViewById(R.id.swRepeatAlarm)
         val alarmStatus: TextView = itemView.findViewById(R.id.tvAlarmStatus)
 
-        val isSelected = repeatAlarmItemView.setOnClickListener{ mRepeatAlarm(repeatAlarmItemView.isChecked) }
     }
 
     override fun onCreateViewHolder(
@@ -59,20 +58,25 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) ->
         val current = getItem(position)
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = current.alarmTimeStamp
-        calendar.apply {
-            calendar.formatDate()
-        }
 
         holder.alarmItemView.text = current.alarmTimeStamp.formatDate()
-        holder.repeatAlarmItemView.isSelected = current.repeatAlarm
+        holder.alarmSwithItemView.isSelected = current.repeatAlarm
         holder.alarmStatus.text = DateUtils.getRelativeTimeSpanString(calendar.timeInMillis)
 
         if (DateUtils.getRelativeTimeSpanString(current.alarmTimeStamp).contains("ago")) {
             holder.alarmStatus.setTextColor(Color.parseColor("#E53935"))
-        }else {
+        } else {
             holder.alarmStatus.setTextColor(Color.parseColor("#43A047"))
         }
-        Log.v("ALARM_STATUS", ">>> ${DateUtils.getRelativeTimeSpanString(calendar.timeInMillis)} Time: ${calendar.timeInMillis.formatDate()}")
+
+        holder.alarmSwithItemView.setOnCheckedChangeListener { buttonView, isChecked ->
+            mRepeatAlarm(isChecked, current.alarmTimeStamp, current.id)
+        }
+
+        Log.v(
+            "ALARM_STATUS",
+            ">>> ${DateUtils.getRelativeTimeSpanString(calendar.timeInMillis)} Time: ${calendar.timeInMillis.formatDate()} repeat: ${current.repeatAlarm}"
+        )
     }
 
     fun removeAt(position: Int) {

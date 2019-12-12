@@ -6,39 +6,35 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.opengl.Visibility
-import android.os.AsyncTask
-import android.os.Bundle
-import android.os.Message
+import android.os.*
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.SimpleAdapter
 import android.widget.Toast
-import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.auth.api.phone.SmsRetriever
-import com.google.android.gms.auth.api.phone.SmsRetrieverClient
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.gms.tasks.Task
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.adapter.MessageListAdapter
 import com.infomantri.autosms.send.adapter.SwipeToDeleteCallback
 import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
+import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
+import com.syngenta.pack.util.initViewModel
+import com.syngenta.pack.util.sendSMS
+import com.syngenta.pack.util.showBlendToast
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bootom_sheet.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
@@ -47,12 +43,13 @@ class HomeActivity : BaseActivity() {
 
     private lateinit var mViewModel: MessageViewModel
     private var mSwipePosition = -1
+    private lateinit var bottomNavigation: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mViewModel = ViewModelProviders.of(this).get(MessageViewModel::class.java)
+        mViewModel = initViewModel()
 
         setToolbar()
         setOnClickListener()
@@ -60,6 +57,10 @@ class HomeActivity : BaseActivity() {
         setRecyclerView()
 //        observeDeleteMessage()
         startSmsRetriever()
+
+//        bottomNavigation = findViewById(R.id.bottomNavigationView)
+//        bottomNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+
     }
 
     private fun startSmsRetriever() {
@@ -109,9 +110,29 @@ class HomeActivity : BaseActivity() {
     private fun setRecyclerView() {
         val adapter = MessageListAdapter(copiedText = { copiedText, msg, id ->
             if (id != -1) {
-                deleteMsgById(id)
+                var handler: Handler?
+                val handlerThread = HandlerThread(AppConstant.Handler.HOME_HANDLER)
+                handlerThread.also {
+                    it.start()
+                    handler = Handler(it.looper)
+                }
+                handler?.post {
+                    Log.v("Update_Msg", ">>> Inside Copy to Clipboard... msgId: $id message: $msg")
+                    val msgDao = MessageRoomDatabase.getDatabase(application).messageDbDao()
+                    val repository = MessageDbRepository(msgDao, id)
+                    val message = repository.messageById
+                    message.let {
+                        message.sent = false
+                        repository.updateMessage(message)
+                        sendSMS(application)
+                        Log.v("Message", ">>> message: $message")
+                    }
+                }
+//                deleteMsgById(id)
             } else {
                 copyToClipBoard(copiedText, msg)
+
+
             }
         })
         recyclerview.adapter = adapter
@@ -135,11 +156,42 @@ class HomeActivity : BaseActivity() {
         })
     }
 
+    private val mOnNavigationItemSelectedListener =
+        BottomNavigationView.OnNavigationItemSelectedListener { item ->
+            //            val fragment: Fragment
+//            when (item.itemId) {
+//                R.id.navigation_search_items -> {
+//                    fragment = SearchItemsFragment()
+//                    addFragment(fragment, getString(R.string.search_items))
+//                    return@OnNavigationItemSelectedListener true
+//                }
+//
+//                R.id.navigation_favorites -> {
+//                    fragment = FavoritesFragment()
+//                    addFragment(fragment, getString(R.string.favorites))
+//                    return@OnNavigationItemSelectedListener true
+//                }
+//
+//                R.id.navigation_downloads -> {
+//                    fragment = DownloadFragment()
+//                    addFragment(fragment, getString(R.string.downloads))
+//                    return@OnNavigationItemSelectedListener true
+//                }
+//
+//                R.id.navigation_history -> {
+//                    fragment = HistoryFragment()
+//                    addFragment(fragment, getString(R.string.history))
+//                    return@OnNavigationItemSelectedListener true
+//                }
+//            }
+            false
+        }
+
     private fun copyToClipBoard(copiedText: String, msg: String) {
         val clipBoardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = ClipData.newPlainText("MESSAGE", copiedText)
         clipBoardManager.setPrimaryClip(clipData)
-        Toast.makeText(this, "Message copied to clipboard", Toast.LENGTH_SHORT).show()
+        showBlendToast("Message copied to clipboard", Toast.LENGTH_SHORT)
 
 //        showAlertDialog(deleteMsg = {
 //            Log.v("DIALOG", ">>> return from Alert Dialog 1...")
@@ -149,7 +201,7 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun deleteMsgById(msgId: Int) {
-        Log.v("DELETE_MSG", ">>> Inside deleting Msg... <<<")
+        Log.v("DELETE_MSG", ">>> Inside deleting Msg... Home Activity<<<")
         BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
             override fun onStarted() {
                 Log.v("DELETE_MSG", ">>> deleting Msg...")
@@ -158,6 +210,7 @@ class HomeActivity : BaseActivity() {
                 val message = repository.messageById
                 messageData = message
                 repository.deleteMessage(message)
+                Log.v("MSG_ID_DELETE", ">>> Msg_Id: $msgId")
             }
 
             override fun onCompleted() {

@@ -14,6 +14,9 @@ interface AddAlarmDao {
     @Query("SELECT * from add_alarm_table WHERE id == :alarmId")
     fun getAlarmById(alarmId: Int): AddAlarm
 
+    @Update
+    fun updateAlarm(alarm: AddAlarm)
+
     @Delete
     fun delete(alarm: AddAlarm)
 }

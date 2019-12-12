@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
@@ -38,12 +39,6 @@ class MessageListAdapter(copiedText: (String, String, Int) -> Unit) :
         val categoryItemView: TextView = itemView.findViewById(R.id.tvCategoryValue)
         val sendMsgStatusItemView: TextView = itemView.findViewById(R.id.tvSendMsgStatus)
         val timeStampItemView: TextView = itemView.findViewById(R.id.tvTimeStamp)
-        val onLongClicked = itemView.setOnLongClickListener {
-
-            mCopiedText(msgBodyItemView.text.toString(), msgBodyItemView.text.toString(), -1)
-            Log.v("Message_Copied", ">>> msg copied: ${msgBodyItemView.text}")
-            return@setOnLongClickListener true
-        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MsgViewHolder {
@@ -74,6 +69,15 @@ class MessageListAdapter(copiedText: (String, String, Int) -> Unit) :
                 holder.sendMsgStatusItemView.text = "failed"
                 holder.sendMsgStatusItemView.setTextColor(Color.parseColor("#EF5350"))
             }
+        }
+
+        holder.itemView.setOnLongClickListener {
+            mCopiedText(
+                holder.msgBodyItemView.text.toString(),
+                holder.msgBodyItemView.text.toString(),
+                current.id
+            )
+            return@setOnLongClickListener true
         }
     }
 
