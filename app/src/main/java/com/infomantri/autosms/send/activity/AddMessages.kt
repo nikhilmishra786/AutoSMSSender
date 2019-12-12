@@ -2,21 +2,18 @@ package com.infomantri.autosms.send.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.infomantri.autosms.send.R
+import com.infomantri.autosms.send.adapter.AuthorListAdapter
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.database.Message
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
-import com.infomantri.autosms.send.R
-import com.infomantri.autosms.send.adapter.AuthorListAdapter
-import com.infomantri.autosms.send.util.getTrimmedText
-import com.infomantri.autosms.send.util.removeNewLine
+import com.syngenta.pack.util.getTrimmedText
 import kotlinx.android.synthetic.main.activity_add_message.*
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
 
 
@@ -36,12 +33,20 @@ class AddMessages : BaseActivity() {
     }
 
     private fun setRecyclerView() {
-        val adapter = AuthorListAdapter(author = { appendAuthorName(it, etEnterMessage)})
+        val adapter = AuthorListAdapter(author = { appendAuthorName(it, etEnterMessage) })
         rvAuthorList.adapter = adapter
         val linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         linearLayoutManager.stackFromEnd = false
         rvAuthorList.layoutManager = linearLayoutManager
-        adapter.submitList(listOf("Sadhguru", "Acharya Chanakya", "Swami Vivekanand", "Inspirational", "Legends"))
+        adapter.submitList(
+            listOf(
+                "Sadhguru",
+                "Acharya Chanakya",
+                "Swami Vivekanand",
+                "Inspirational",
+                "Legends"
+            )
+        )
     }
 
     private fun setToolbar() {
@@ -57,7 +62,7 @@ class AddMessages : BaseActivity() {
 
         val fab: View = findViewById(R.id.fabSaveMessage)
         fab.setOnClickListener {
-            val msg = etEnterMessage.removeNewLine()
+            val msg = etEnterMessage.getTrimmedText()
             if (msg.isEmpty().not()) {
                 mViewModel.insert(Message(msg, System.currentTimeMillis(), false))
             }

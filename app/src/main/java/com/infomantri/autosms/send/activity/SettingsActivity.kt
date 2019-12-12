@@ -6,12 +6,12 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.base.BaseActivity
-import com.infomantri.autosms.send.constants.AppConstants
+import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import com.infomantri.autosms.send.viewmodel.SubscribersViewModel
+import com.syngenta.pack.util.*
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.activity_settings.view.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
@@ -28,8 +28,8 @@ class SettingsActivity : BaseActivity() {
         init()
         setToolbar()
 
-        mSubscribersViewModel = ViewModelProviders.of(this).get(SubscribersViewModel::class.java)
-        mMessageViewModel = ViewModelProviders.of(this).get(MessageViewModel::class.java)
+        mSubscribersViewModel = initViewModel()
+        mMessageViewModel = initViewModel()
         setOnClickListener()
 
         mMessageViewModel.getSentMsgCount.observe(this, Observer { msgCount ->
@@ -42,14 +42,12 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun init() {
-        switchWidget1.isChecked = getSharedPreference(this).getBoolean(AppConstants.MOBILE_NO_1, true)
-        switchWidget2.isChecked = getSharedPreference(this).getBoolean(AppConstants.MOBILE_NO_2, false)
-        tvDefaultActiveMobileNo.text = getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "9867169318")
-
-        getCallsDetails().iterator().forEach {callLog ->
-            if (callLog.name == "Nikhil 4g")
-            tvMsgFailureValue.text = callLog.name.plus(" ${callLog.number} type: ${callLog.type} ${callLog.duration}")
-        }
+        switchWidget1.isChecked =
+            getBooleanFromPreference(AppConstant.MOBILE_NO_1) ?: true
+        switchWidget2.isChecked =
+            getBooleanFromPreference(AppConstant.MOBILE_NO_2) ?: false
+        tvDefaultActiveMobileNo.text =
+            getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: AppConstant.DEBUG_MOBILE_NO
     }
 
     private fun setToolbar() {
@@ -65,16 +63,28 @@ class SettingsActivity : BaseActivity() {
 
     private fun setOnClickListener() {
 
-        switchWidget1.setOnCheckedChangeListener{buttonView, isChecked ->
+        switchWidget1.setOnCheckedChangeListener { buttonView, isChecked ->
 
             writeToSharedPref(isChecked, tvDefaultMobileNoValue1.text.toString(), switchWidget1.id)
-            Log.v("SHARED_PREF_DEFAULT_NO1", ">>> getSharedPref: ${getSharedPreference(this).getString(DEFAULT_MOBILE_NO,"unknown")}")
+            Log.v(
+                "SHARED_PREF_DEFAULT_NO2",
+                ">>> getSharedPref: ${getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
+                    ?: "unknown...1"}"
+            )
         }
 
         switchWidget2.setOnCheckedChangeListener { buttonView, isChecked ->
 
-            writeToSharedPref(isChecked, tvDefaultMobileNoValue2. tvDefaultMobileNoValue2.text.toString(), switchWidget2.id)
-            Log.v("SHARED_PREF_DEFAULT_NO2", ">>> getSharedPref: ${getSharedPreference(this).getString(DEFAULT_MOBILE_NO,"unknown")}")
+            writeToSharedPref(
+                isChecked,
+                tvDefaultMobileNoValue2.tvDefaultMobileNoValue2.text.toString(),
+                switchWidget2.id
+            )
+            Log.v(
+                "SHARED_PREF_DEFAULT_NO2",
+                ">>> getSharedPref: ${getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
+                    ?: "unknown...2"}"
+            )
         }
 
         val fab: View = findViewById(R.id.fabSaveMobileNo)
@@ -90,7 +100,7 @@ class SettingsActivity : BaseActivity() {
             startActivity(intent)
         }
 
-        toolIvBack.setOnClickListener{
+        toolIvBack.setOnClickListener {
             finish()
         }
 
@@ -98,40 +108,58 @@ class SettingsActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        tvDefaultActiveMobileNo.text = getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "unknown...")
+        tvDefaultActiveMobileNo.text =
+            getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: AppConstant.DEBUG_MOBILE_NO
     }
 
     private fun writeToSharedPref(isChecked: Boolean, mobileNo: String, id: Int) {
-        when(id){
+        when (id) {
             switchWidget2.id -> {
-                if(isChecked) {
+                if (isChecked) {
                     switchWidget1.isChecked = false
-                    getSharedPreference(this).edit().putBoolean(AppConstants.MOBILE_NO_2, switchWidget2.isChecked).apply()
-                    getSharedPreference(this).edit().putBoolean(AppConstants.MOBILE_NO_1, false).apply()
-                    getSharedPreference(this).edit().putString(DEFAULT_MOBILE_NO,mobileNo).apply()
+                    getSharedPreference(this).edit()
+                        .putBoolean(AppConstant.MOBILE_NO_2, switchWidget2.isChecked).apply()
+                    getSharedPreference(this).edit().putBoolean(AppConstant.MOBILE_NO_1, false)
+                        .apply()
+                    addStringToPreference(AppConstant.DEFAULT_MOBILE_NO, mobileNo)
                     tvDefaultActiveMobileNo.text = mobileNo
-                    Log.v("DEFAULT_MOBILE_NO",">>> mobile: ${getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "unknown")}")
-                }else{
+                    Log.v(
+                        "DEFAULT_MOBILE_NO",
+                        ">>> mobile: ${getSharedPreference(this).getString(
+                            mobileNo,
+                            "unknown"
+                        )}"
+                    )
+                } else {
                     switchWidget1.isChecked = true
-                    getSharedPreference(this).edit().putBoolean(AppConstants.MOBILE_NO_1, true).apply()
-                    getSharedPreference(this).edit().putString(DEFAULT_MOBILE_NO, tvDefaultMobileNoValue1.text.toString()).apply()
+                    setBooleanFromPreference(AppConstant.MOBILE_NO_1, true)
+                    addStringToPreference(
+                        AppConstant.DEFAULT_MOBILE_NO,
+                        tvDefaultMobileNoValue1.text.toString()
+                    )
                 }
             }
             else -> {
-                if(isChecked) {
+                if (isChecked) {
                     switchWidget2.isChecked = false
-                    getSharedPreference(this).edit().putBoolean(AppConstants.MOBILE_NO_1, switchWidget1.isChecked).apply()
-                    getSharedPreference(this).edit().putBoolean(AppConstants.MOBILE_NO_2, false).apply()
-                    getSharedPreference(this).edit().putString(DEFAULT_MOBILE_NO, mobileNo).apply()
+                    getSharedPreference(this).edit()
+                        .putBoolean(AppConstant.MOBILE_NO_1, switchWidget1.isChecked).apply()
+                    getSharedPreference(this).edit().putBoolean(AppConstant.MOBILE_NO_2, false)
+                        .apply()
+                    addStringToPreference(AppConstant.DEFAULT_MOBILE_NO, mobileNo)
                     tvDefaultActiveMobileNo.text = mobileNo
                     Log.v(
                         "NON_DEFAULT_MOBILE_NO",
-                        ">>> NoDefault Mobile NO: ${getSharedPreference(this).getString(DEFAULT_MOBILE_NO, "unknown")}"
+                        ">>> NoDefault Mobile NO: ${getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
+                            ?: "unknown...Switch2"}"
                     )
-                }else {
+                } else {
                     switchWidget2.isChecked = true
-                    getSharedPreference(this).edit().putBoolean(AppConstants.MOBILE_NO_2, true).apply()
-                    getSharedPreference(this).edit().putString(DEFAULT_MOBILE_NO,tvDefaultMobileNoValue2.text.toString()).apply()
+                    setBooleanFromPreference(AppConstant.MOBILE_NO_2, true)
+                    addStringToPreference(
+                        AppConstant.DEFAULT_MOBILE_NO,
+                        tvDefaultMobileNoValue2.text.toString()
+                    )
                 }
             }
         }

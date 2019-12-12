@@ -48,9 +48,6 @@ import kotlin.collections.ArrayList
 
 open class BaseActivity : AppCompatActivity() {
 
-    val IS_DEFAULT_NO = "IS_DEFAULT_NO"
-    val DEFAULT_MOBILE_NO = "DEFAULT_MOBILE_NO"
-
     companion object {
         var MESSAGE_SPLIT_COUNT = 0
         var SENT_MESSAGE_COUNT = 0

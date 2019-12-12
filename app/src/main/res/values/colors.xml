@@ -23,5 +23,7 @@
     <color name="lightGrey">#EBE6E6</color>
     <color name="backArrow">#8C98AE</color>
     <color name="darkGrey">#8D99AE</color>
+    
+    <color name="colorBlendToast">#5A2616</color>
 
 </resources>

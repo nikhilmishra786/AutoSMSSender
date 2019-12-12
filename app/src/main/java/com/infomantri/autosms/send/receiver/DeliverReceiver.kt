@@ -8,7 +8,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
+import android.os.AsyncTask
 import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
 import android.text.format.DateUtils
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -16,44 +19,66 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.preference.PreferenceManager
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.HomeActivity
+import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
-import com.infomantri.autosms.send.util.sendSMS
+import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.database.MessageDbRepository
+import com.infomantri.autosms.send.database.MessageRoomDatabase
+import com.syngenta.pack.util.*
+import java.util.*
 
-class DeliverReceiver: BroadcastReceiver() {
-
-    var MESSAGE_SPLIT_COUNT = 0
-    var SENT_MESSAGE_COUNT = 0
-    var DELIVERED_MESSAGE_COUNT = 0
+class DeliverReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
 //        val pendingResult: PendingResult = goAsync()
 
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
-        DELIVERED_MESSAGE_COUNT = sharedPref.getInt("DELIVERED_MESSAGE_COUNT", 0)
-        SENT_MESSAGE_COUNT = sharedPref.getInt("SENT_MESSAGE_COUNT", 0)
-        val totalDeliveredTimeTaken = sharedPref.getLong("FIRST_DELIVERED_FIRED_TIME_STAMP", System.currentTimeMillis())
-
-        Log.v("Deliver_onReceive", ">>> DeliverReceiver onRecive() .....")
+        Log.v("Deliver_onReceive", ">>> DeliverReceiver onReceive() .....")
         context?.let {
-            DELIVERED_MESSAGE_COUNT++
-            sharedPref.edit().putInt("DELIVERED_MESSAGE_COUNT", DELIVERED_MESSAGE_COUNT).apply()
-            Log.v("ASYNC_TASK", ">>> Before Async Task in Deliver onReceive()... resultCode: $resultCode Count: ${DELIVERED_MESSAGE_COUNT}")
+            val msgId = intent?.extras?.getInt(AppConstant.MESSAGE_ID) ?: -1
+            Log.v(
+                "ASYNC_TASK",
+                ">>> Before Async Task in Deliver onReceive()... resultCode: $resultCode msgId: $msgId}"
+            )
 
-            when(resultCode) {
+            when (resultCode) {
 
                 Activity.RESULT_OK -> {
-                    sendSMS(context, isMessageSent = true)
-                    sendNotification(context, 123456, "Message Delivered", "Message delivered Count: $DELIVERED_MESSAGE_COUNT Time: ${DateUtils.getRelativeTimeSpanString(totalDeliveredTimeTaken)}", HomeActivity::class.java)
+
+                    updateDeliverStatus(
+                        context,
+                        msgId
+                    )
+
+                    sendNotification(
+                        context,
+                        AppConstant.NOTIFICATION_ID,
+                        "Message Delivered",
+                        "Msg id: $msgId",
+                        HomeActivity::class.java
+                    )
+                    Log.v(
+                        AppConstant.MESSAGE_DELIVERED,
+                        ">>> Message Delivered -> Message delivered  Time: ${DateUtils.getRelativeTimeSpanString(
+                            System.currentTimeMillis()
+                        )}"
+                    )
                 }
 
                 Activity.RESULT_CANCELED -> {
-                    sharedPref.edit().putInt("DELIVERED_MESSAGE_COUNT", --DELIVERED_MESSAGE_COUNT).apply()
-                    sendNotification(context, 123456, "Message not Delivered", "Activity.RESULT_CANCELED DeliverCount--: $DELIVERED_MESSAGE_COUNT Time: ${DateUtils.getRelativeTimeSpanString(totalDeliveredTimeTaken)}", HomeActivity::class.java)
+                    sendNotification(
+                        context,
+                        AppConstant.NOTIFICATION_ID,
+                        "Message not Delivered",
+                        "Activity.RESULT_CANCELED DeliverCount--: Time: ${DateUtils.getRelativeTimeSpanString(
+                            System.currentTimeMillis()
+                        )}",
+                        HomeActivity::class.java
+                    )
                 }
-            }
-            if(MESSAGE_SPLIT_COUNT == DELIVERED_MESSAGE_COUNT || MESSAGE_SPLIT_COUNT == SENT_MESSAGE_COUNT) {
-                sharedPref.edit().putInt("DELIVERED_MESSAGE_COUNT", 0).apply()
+                else -> {
+
+                }
             }
         }
     }
@@ -105,6 +130,38 @@ class DeliverReceiver: BroadcastReceiver() {
         }
 
         notificationManager?.notify(id, notificationBuilder.build())
+    }
+
+    fun updateDeliverStatus(context: Context, msgId: Int) {
+        var handler: Handler?
+        Log.v("MSG_DELIVERED", ">>> Msg delivered Running AsyncTask onStarted()...")
+
+        val handlerThread = HandlerThread(AppConstant.Handler.UPDATE_HANDLER)
+        handlerThread.also {
+            it.start()
+            handler = Handler(it.looper)
+        }
+        handler?.postDelayed({
+
+            Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $msgId")
+            val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
+            val repository = MessageDbRepository(msgDao, id = msgId)
+
+            val message = repository.messageById
+            Log.v("Updated_MSG", ">>> Msg: $message")
+
+            message?.let {
+                if (msgId != -1)
+                    message.sent = true
+                Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
+                repository.updateMessage(message)
+
+                Log.v(
+                    "MSG_DELIVERY_STATUS",
+                    ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
+                )
+            }
+        }, 500)
     }
 
 }

@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProviders
@@ -19,10 +21,13 @@ import com.infomantri.autosms.send.adapter.AddAlarmsListAdapter
 import com.infomantri.autosms.send.adapter.SwipeToDeleteCallback
 import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
+import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.*
 import com.infomantri.autosms.send.receiver.AlarmReceiver
-import com.infomantri.autosms.send.util.formatDate
 import com.infomantri.autosms.send.viewmodel.AddAlarmViewModel
+import com.syngenta.pack.util.formatDate
+import com.syngenta.pack.util.initViewModel
+import com.syngenta.pack.util.showBlendToast
 import kotlinx.android.synthetic.main.activity_add_alarms.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
 import java.text.SimpleDateFormat
@@ -36,6 +41,7 @@ class AddAlarmsActivity : BaseActivity() {
         }
     }
 
+    private var repeatAlarm: Boolean = false
     private lateinit var mAlarmView: AddAlarmViewModel
 
     var alarmData =
@@ -45,7 +51,7 @@ class AddAlarmsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarms)
 
-        mAlarmView = ViewModelProviders.of(this).get(AddAlarmViewModel::class.java)
+        mAlarmView = initViewModel()
 
         setToolbar()
         setRecyclerView()
@@ -62,11 +68,13 @@ class AddAlarmsActivity : BaseActivity() {
     }
 
     private fun setRecyclerView() {
-        val adapter = AddAlarmsListAdapter({}, deleteAlarm = { alarmId ->
+        val adapter = AddAlarmsListAdapter(repeatAlarm = { repeatAlarm, timeStamp, id ->
+            repeatAlarm.toggleAlarm(timeStamp, id)
+        }, deleteAlarm = { alarmId ->
             if (alarmId != -1)
-                deleteMsgById(alarmId)
+                deleteAlarmById(alarmId)
             else
-                Toast.makeText(this, "Error while deleting", Toast.LENGTH_SHORT).show()
+                showBlendToast("Error while deleting", Toast.LENGTH_LONG)
         })
 
         add_alarm_recyclerview.adapter = adapter
@@ -76,7 +84,7 @@ class AddAlarmsActivity : BaseActivity() {
                 DividerItemDecoration.VERTICAL
             )
         )
-        add_alarm_recyclerview.scrollToPosition(0)
+//        add_alarm_recyclerview.scrollToPosition(0)
         val linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.reverseLayout = true
         linearLayoutManager.stackFromEnd = true
@@ -84,7 +92,7 @@ class AddAlarmsActivity : BaseActivity() {
 
         val swipeHandler = object : SwipeToDeleteCallback(this) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                Log.v("onSwiped", ">>> postion: -> ${viewHolder.adapterPosition}")
+                Log.v("onSwiped", ">>> position: -> ${viewHolder.adapterPosition}")
                 adapter.removeAt(viewHolder.adapterPosition)
             }
         }
@@ -141,17 +149,23 @@ class AddAlarmsActivity : BaseActivity() {
                 set(Calendar.MINUTE, minute)
             }
             mAlarmView.insert(AddAlarm(addAlarmCalendar.timeInMillis))
-            setAlarm(
+            setRepeatingAlarm(
                 addAlarmCalendar,
                 ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
                 getAlarmTitle(addAlarmCalendar.timeInMillis)
             )
+//            showBlendToast("Alarm added at ${addAlarmCalendar.formatDateToTime()}")
             Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
         }
     }
 
-    private fun setAlarm(calendar: Calendar, requestCode: Int, title: String = "") {
+    private fun setRepeatingAlarm(
+        calendar: Calendar,
+        requestCode: Int,
+        title: String = ""
+    ) {
 
+        Log.v("REPEAT_ALARM", ">>> Repeat Alarm ---> ")
         val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
             putExtra("reminder_timestamp", calendar.timeInMillis)
             putExtra("reminder_id", requestCode)
@@ -182,10 +196,77 @@ class AddAlarmsActivity : BaseActivity() {
                 pendingIntent
             )
         }
-        Log.v("SET_ALARM", ">>> $title: ${calendar.formatDate()}")
+        Log.v("SET_ALARM", ">>> Repeating -> $title: ${calendar.formatDate()}")
     }
 
-    private fun deleteMsgById(msgId: Int) {
+    private fun setNonRepeatingAlarm(timeStamp: Long, requestCode: Int, title: String) {
+        Log.v("REPEAT_ALARM", ">>> Non-Repeat Alarm ---> ")
+
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timeStamp
+        val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
+            putExtra("reminder_timestamp", calendar.timeInMillis)
+            putExtra("reminder_id", requestCode)
+            putExtra("reminder_title", title)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            requestCode,
+            notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        if (Date().after(calendar.time)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+        } else {
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+        }
+        Log.v("SET_ALARM", ">>> Non-Repeating -> $title: ${calendar.formatDate()}")
+    }
+
+    private fun Boolean.toggleAlarm(timeStamp: Long, alarmId: Int) {
+
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timeStamp
+        val requestCode = (timeStamp).toInt() / 10 * 1000
+        cancelAlarm(requestCode)
+
+        if (this) {
+            setRepeatingAlarm(calendar, requestCode, getAlarmTitle(addAlarmCalendar.timeInMillis))
+        } else {
+            cancelAlarm(requestCode)
+            var handler: Handler?
+            val handlerThread = HandlerThread(AppConstant.Handler.UPDATE_HANDLER)
+            handlerThread.also {
+                it.start()
+                handler = Handler(it.looper)
+            }
+            handler?.post {
+                val addAlarmDao = MessageRoomDatabase.getDatabase(application).addAlarmDao()
+                val repository = AddAlarmRepository(addAlarmDao, alarmId)
+                val alarm = repository.alarmById
+                alarm.repeatAlarm = this
+                repository.updateAlarm(alarm)
+                Log.v(
+                    "ALARM_BY_ID",
+                    ">>> alarm: ${alarm.alarmTimeStamp.formatDate()} repeat: ${repository.alarmById.repeatAlarm}"
+                )
+            }
+        }
+    }
+
+    private fun deleteAlarmById(msgId: Int) {
         Log.v("DELETE_MSG", ">>> Inside deleting Msg... <<<")
         BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
             override fun onStarted() {
@@ -206,7 +287,7 @@ class AddAlarmsActivity : BaseActivity() {
                         )
                         val calendar = Calendar.getInstance()
                         calendar.timeInMillis = alarmData.alarmTimeStamp
-                        setAlarm(
+                        setRepeatingAlarm(
                             calendar = calendar,
                             requestCode = ((alarmData.alarmTimeStamp).toInt() % 10 * 1000),
                             title = getAlarmTitle(alarmData.alarmTimeStamp)
@@ -242,6 +323,11 @@ class AddAlarmsActivity : BaseActivity() {
             in 21..23 -> "Good Night"
             else -> "Good Day"
         }
+    }
+
+    fun Long.formatDate(): String? {
+        val simpleDateFormatter = SimpleDateFormat("hh:mm a", Locale.US)
+        return simpleDateFormatter.format(this)
     }
 
 }

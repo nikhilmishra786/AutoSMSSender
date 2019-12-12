@@ -1,4 +1,4 @@
-package com.infomantri.autosms.send.util
+package com.syngenta.pack.util
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,33 +10,39 @@ import android.graphics.*
 import android.media.RingtoneManager
 import android.os.AsyncTask
 import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
 import android.telephony.SmsManager
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextPaint
-import android.text.method.LinkMovementMethod
-import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
-import android.util.Log
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
+import android.util.Patterns
+import android.text.TextUtils
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.util.Log
+import android.view.KeyEvent
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.infomantri.autosms.send.R
-import com.infomantri.autosms.send.SmsSenderApp
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
-import com.infomantri.autosms.send.database.Message
+import com.infomantri.autosms.send.base.BaseActivity.Companion.MESSAGE_SPLIT_COUNT
+import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.receiver.DeliverReceiver
@@ -44,18 +50,108 @@ import com.infomantri.autosms.send.receiver.SentReceiver
 import java.text.SimpleDateFormat
 import java.util.*
 
-const val IS_DEFAULT_NO = "IS_DEFAULT_NO"
-const val DEFAULT_MOBILE_NO = "DEFAULT_MOBILE_NO"
+val EMAIL = "ajay.n@xcubelabs.com"
 
 inline fun <reified T : ViewModel> AppCompatActivity.initViewModel(): T {
     return ViewModelProviders.of(this).get(T::class.java)
+}
+
+inline fun <reified T : ViewModel> Fragment.initViewModel(): T {
+    return ViewModelProviders.of(this).get(T::class.java)
+}
+
+inline fun EditText.imeDoneClick(crossinline func: () -> Unit) {
+    setOnEditorActionListener { _: TextView?, actionId: Int, _: KeyEvent? ->
+        if (actionId == EditorInfo.IME_ACTION_DONE) {
+            func.invoke()
+        }
+        false
+    }
+}
+
+fun BaseActivity.showToast(msg: String) {
+    android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+}
+
+fun AppCompatActivity.showBlendToast(msg: String, length: Int = Toast.LENGTH_SHORT) {
+    val toast = Toast.makeText(this, msg, length)
+    toast.view.apply {
+        background.colorFilter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            BlendModeColorFilter(
+                ContextCompat.getColor(this@showBlendToast, R.color.colorBlendToast),
+                BlendMode.SRC_IN
+            )
+        } else {
+            PorterDuffColorFilter(
+                ContextCompat.getColor(this@showBlendToast, R.color.colorBlendToast),
+                PorterDuff.Mode.SRC_IN
+            )
+        }
+//        setBackgroundColor(ContextCompat.getColor(this@showToast, R.color.title))
+        findViewById<TextView>(android.R.id.message).setTextColor(Color.WHITE)
+    }
+
+    toast.show()
+}
+
+fun EditText.isValidEmail(): Boolean {
+    return !TextUtils.isEmpty(getTrimmedText()) && Patterns.EMAIL_ADDRESS.matcher(getTrimmedText()).matches()
+}
+
+inline fun EditText.onKeyBoardDonePress(crossinline action: () -> Unit) {
+    setOnEditorActionListener { v, actionId, event ->
+        if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+            action()
+        }
+
+        true
+    }
+}
+
+fun getSharedPreference(context: Context): SharedPreferences =
+    PreferenceManager.getDefaultSharedPreferences(context)
+
+
+/**
+ *
+ * Minimum eight characters, at least one letter and one number:
+
+"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
+Minimum eight characters, at least one letter, one number and one special character:
+
+"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$"
+Minimum eight characters, at least one uppercase letter, one lowercase letter and one number:
+
+"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$"
+Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character:
+
+"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+Minimum eight and maximum 10 characters, at least one uppercase letter, one lowercase letter, one number and one special character:
+
+"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,10}$"
+ *
+ *
+ */
+fun EditText.isValidPassword(): Boolean {
+
+    val containsLowerChar = getTrimmedText().matches(Regex(".*[a-z].*"))
+    val containsUpperChar = getTrimmedText().matches(Regex(".*[A-Z].*"))
+    val containsDigit = getTrimmedText().matches(Regex(".*[0-9].*"))
+    val containSpecialChar = getTrimmedText().matches(Regex(".*[@${'$'}!%*?&#].*"))
+
+    return getTrimmedText().length >= 8 &&
+            ((containsLowerChar && containSpecialChar && containsDigit) ||
+                    (containsLowerChar && containSpecialChar && containsUpperChar) ||
+                    (containsLowerChar && containsDigit && containsUpperChar))
+
+
+//    return getTrimmedText().matches(Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@${'$'}!%*?&])[A-Za-z\\d@${'$'}!%*?&]{8,}$".trimIndent()))
 }
 
 fun EditText.isNotEmpty() = getTrimmedText().isNotEmpty()
 
 fun EditText.getTrimmedText() = this.text.toString().trim()
 
-fun TextView.getStringText() = this.text.toString()
 
 fun View.setGone() {
     visibility = View.GONE
@@ -69,48 +165,35 @@ fun View.setInvisible() {
     visibility = View.INVISIBLE
 }
 
-fun Calendar.formatDate(): String? {
-    val simpleDateFormatter = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US)
-    return simpleDateFormatter.format(time)
+fun Context.addStringToPreference(key: String, value: String?) {
+    PreferenceManager.getDefaultSharedPreferences(this).edit()
+        .putString(key, value).apply()
 }
 
-fun EditText.removeNewLine(): String {
-
-    val text = this.text.toString().trim().removeSurrounding("\n", "\n").trimMargin("|")
-        .trimIndent()
-    val newText = ""
-    var indexWhiteSpace = 0
-    text.forEach {
-        if(!it.isWhitespace() && (it == '\n').not()){
-            newText.plus(text.get(indexWhiteSpace))
-            indexWhiteSpace++
-        }
-    }
-    return text
+fun Context.getStringFromPreference(key: String): String? {
+    return PreferenceManager.getDefaultSharedPreferences(this).getString(key, null)
 }
 
-fun getSharedPreference(context: Context): SharedPreferences =
-    PreferenceManager.getDefaultSharedPreferences(context)
+fun Context.addIntToPreference(key: String, value: Int) {
+    PreferenceManager.getDefaultSharedPreferences(this).edit()
+        .putInt(key, value).apply()
+}
 
-fun TextView.multiColorTextView(
-    lineSplitLength: Int,
-    @ColorRes firstTextColor: Int,
-    @ColorRes secondTextColor: Int
-) {
+fun Context.getIntFromPreference(key: String): Int? {
+    return PreferenceManager.getDefaultSharedPreferences(this).getInt(key, 0)
+}
 
-    val word = SpannableString(this.text.toString())
+fun Context.setBooleanFromPreference(key: String, value: Boolean) {
+    PreferenceManager.getDefaultSharedPreferences(this).edit()
+        .putBoolean(key, value).apply()
+}
 
-    word.setSpan(
-        ForegroundColorSpan(ContextCompat.getColor(this.context, firstTextColor)),
-        0, lineSplitLength, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-    )
+fun Context.getBooleanFromPreference(key: String): Boolean? {
+    return PreferenceManager.getDefaultSharedPreferences(this).getBoolean(key, false)
+}
 
-    word.setSpan(
-        ForegroundColorSpan(ContextCompat.getColor(this.context, secondTextColor)),
-        lineSplitLength + 1, word.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-    )
-
-    this.text = word
+fun Context.clearPreference() {
+    PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply()
 }
 
 inline fun TextView.multiColorText(
@@ -148,192 +231,66 @@ inline fun TextView.multiColorText(
     this.text = word
 }
 
-inline fun EditText.onKeyBoardDonePress(crossinline action: () -> Unit) {
-    setOnEditorActionListener { v, actionId, event ->
-        if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
-            action()
-        }
+inline fun TextView.multiColorFromToText(
+    lineSplitStartLength: Int,
+    lineSplitEndLength: Int,
+    @ColorRes firstTextColor: Int,
+    @ColorRes secondTextColor: Int,
+    crossinline onClick: () -> Unit
+) {
 
-        true
-    }
-}
+    val word = SpannableString(this.text.toString())
 
-fun AppCompatActivity.showToast(msg: String, length: Int = Toast.LENGTH_SHORT) {
-    val toast = Toast.makeText(this, msg, length)
-    toast.view.apply {
-        background.colorFilter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            BlendModeColorFilter(
-                ContextCompat.getColor(this@showToast, R.color.title),
-                BlendMode.SRC_IN
-            )
-        } else {
-            PorterDuffColorFilter(
-                ContextCompat.getColor(this@showToast, R.color.title),
-                PorterDuff.Mode.SRC_IN
-            )
-        }
-//        setBackgroundColor(ContextCompat.getColor(this@showToast, R.color.title))
-        findViewById<TextView>(android.R.id.message).setTextColor(Color.WHITE)
-    }
-
-    toast.show()
-}
-
-fun getFromDatabase(context: Context): MessageDbRepository {
-
-    val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
-
-    return MessageDbRepository(msgDao)
-}
-
-fun sendSMS(context: Context, isMessageSent: Boolean = false, isClientRequested: Boolean = false) {
-    val smsManager = SmsManager.getDefault() as SmsManager
-    Log.v(
-        "SmsManager_",
-        ">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}"
+    word.setSpan(
+        ForegroundColorSpan(ContextCompat.getColor(this.context, firstTextColor)),
+        0, lineSplitStartLength, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
     )
 
-    val DEFAULT_MOBILE_NO =
-        getSharedPreference(context).getString(DEFAULT_MOBILE_NO, "9867169318")
-    val IS_DEFAULT = getSharedPreference(context).getBoolean(IS_DEFAULT_NO, true)
+    word.setSpan(
+        ForegroundColorSpan(ContextCompat.getColor(this.context, secondTextColor)),
+        lineSplitStartLength + 1, lineSplitEndLength, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
 
-    BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
-        override fun onStarted() {
-            val repository = getFromDatabase(context)
-            val allMessages = repository.allMessages
-            var index = 0
-            var mSentCount = 0
+    word.setSpan(
+        ForegroundColorSpan(ContextCompat.getColor(this.context, firstTextColor)),
+        lineSplitEndLength + 1, word.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
 
-            try {
-                if (isMessageSent) {
-                    updateDeliverStatus(context, isClientRequested)
-                } else {
-                    allMessages.iterator().forEach { msg: Message ->
-                        if (mSentCount < 1 && isClientRequested || !msg.sent) {
-
-                            val sentIntent = Intent(context, SentReceiver::class.java).apply {
-                                putExtra("MESSAGE_SENT", msg.id)
-                                putExtra("reminder_timestamp", System.currentTimeMillis())
-                                putExtra("reminder_id", 6)
-                                putExtra("reminder_title", "Message Sent Successfully...")
-                            }
-                            sentIntent.action = "message_sent"
-
-                            val sentPendingIntent = PendingIntent.getBroadcast(
-                                context, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                            )
-
-                            val deliveredIntent =
-                                Intent(context, DeliverReceiver::class.java).apply {
-                                    putExtra("MESSAGE_DELIVER", msg.id)
-                                }
-                            val deliveredPendingIntent = PendingIntent.getBroadcast(
-                                context, 0, deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                            )
-
-                            val sentPIList = ArrayList<PendingIntent>()
-                            val deliveredPIList = ArrayList<PendingIntent>()
-
-                            getSharedPreference(context).edit().putInt("MESSAGE_ID", msg.id)
-                                .apply()
-
-                            val msgListParts = smsManager.divideMessage(msg.message)
-//                                msgListParts.iterator().forEach {msg ->
-//                                    Log.v("DIVIDE_MESSAGE", ">>> divide Msg: $msg\n")
-//                                    deliverPIList.add(deliveredPendingIntent)
-//                                }
-                            var count = 0
-
-                            repeat(msgListParts.size) {
-                                sentPIList.add(count, sentPendingIntent)
-                                deliveredPIList.add(count, deliveredPendingIntent)
-                                count++
-                            }
-                            BaseActivity.MESSAGE_SPLIT_COUNT = count
-                            getSharedPreference(context).edit()
-                                .putInt("MESSAGE_SPLIT_COUNT", count).apply()
-
-                            smsManager.sendMultipartTextMessage(
-                                DEFAULT_MOBILE_NO,
-                                null,
-                                msgListParts,
-                                sentPIList,
-                                deliveredPIList
-                            )
-
-                            Thread.sleep(2 * 1000)
-
-                            if (getSharedPreference(context).getBoolean(
-                                    "IS_SENT_ERROR",
-                                    false
-                                )
-                            ) {
-                                msg.apply {
-                                    sent = false
-                                    isFailed = true
-                                }
-                                repository.updateMessage(msg)
-                                Log.v(
-                                    "IS_SENT_ERROR",
-                                    ">>> received an Error!... from sentReceiver() msg: ${msg.message} -> sent Error: ${msg.isFailed}..."
-                                )
-                            }
-                            mSentCount++
-                            if (mSentCount == 1)
-                                return@forEach
-                        }
-                        index++
-//                            Log.v(
-//                                "ALL_MESSAGES",
-//                                ">>> all Msg ${msg.message} -> sent: ${msg.sent} -> isFailed: ${msg.isFailed}"
-//                            )
-                    }
-                }
-
-            } catch (e: Exception) {
-                allMessages[index].apply {
-                    sent = false
-                    isFailed = true
-                }
-                sendNotification(
-                    SmsSenderApp.mApplication,
-                    404,
-                    "SMS send error!",
-                    "Error -> $e",
-                    HomeActivity::class.java
-                )
-                Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
-            }
+    val spanClick = object : ClickableSpan() {
+        override fun onClick(widget: View) {
+            onClick()
         }
 
-        override fun onCompleted() {
+        override fun updateDrawState(ds: TextPaint) {
+            super.updateDrawState(ds)
+            ds.isUnderlineText = false
         }
-    }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+    }
+
+    word.setSpan(spanClick, lineSplitStartLength, lineSplitEndLength, 0)
+    this.movementMethod = LinkMovementMethod.getInstance()
+    this.text = word
 }
 
-fun updateDeliverStatus(context: Context, isClientRequested: Boolean = false) {
-    Log.v("MSG_DELIVERED", ">>> updateDeliverStatus Running AsyncTask onStarted()...")
-//                val messageId = intent?.getIntExtra("MESSAGE_DELIVER",-1)
+fun TextView.multiColorTextView(
+    lineSplitLength: Int,
+    @ColorRes firstTextColor: Int,
+    @ColorRes secondTextColor: Int
+) {
 
-    val messageId = getSharedPreference(context).getInt("MESSAGE_ID", -1)
-    messageId.let {
-        Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $messageId")
-        val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
-        val repository = MessageDbRepository(msgDao, messageId)
+    val word = SpannableString(this.text.toString())
 
-        val message = repository.messageById
-        message.apply {
-            sent = true
+    word.setSpan(
+        ForegroundColorSpan(ContextCompat.getColor(this.context, firstTextColor)),
+        0, lineSplitLength, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
 
-        }
-        Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
-        repository.updateMessage(message)
+    word.setSpan(
+        ForegroundColorSpan(ContextCompat.getColor(this.context, secondTextColor)),
+        lineSplitLength + 1, word.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
 
-        Log.v(
-            "MSG_DELIVERY_STATUS",
-            ">>> Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
-        )
-    }
+    this.text = word
 }
 
 fun sendNotification(
@@ -356,12 +313,12 @@ fun sendNotification(
     val notificationBuilder =
         NotificationCompat.Builder(context, "AlarmReminderChannel")
             .setSmallIcon(R.drawable.ic_sms_launcher_icon_108x108)
-            .setLargeIcon(
-                BitmapFactory.decodeResource(
-                    context.resources,
-                    R.mipmap.ic_launcher_round
-                )
-            )
+//                .setLargeIcon(
+//                    BitmapFactory.decodeResource(
+//                        context.resources,
+//                        R.mipmap.ic_launcher_round
+//                    )
+//                )
             .setContentTitle(title)
             .setContentText(subTitle)
             .setSound(defaultSoundUri)
@@ -383,4 +340,146 @@ fun sendNotification(
     }
 
     notificationManager?.notify(id, notificationBuilder.build())
+}
+
+fun getFromDatabase(context: Context): MessageDbRepository {
+
+    val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
+
+    return MessageDbRepository(msgDao)
+}
+
+fun sendSMS(
+    context: Context
+) {
+    var handler: Handler?
+    val handlerThread = HandlerThread(AppConstant.Handler.SENT_HANDLER)
+    handlerThread.also {
+        it.start()
+        handler = Handler(it.looper)
+    }
+    handler?.post {
+        val smsManager = SmsManager.getDefault() as SmsManager
+        Log.v(
+            "SmsManager_",
+            ">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}"
+        )
+
+        val DEFAULT_MOBILE_NO =
+            context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
+
+        val repository = getFromDatabase(context)
+        val allMessages = repository.allMessages
+        var index = 0
+        var mSentCount = 0
+
+        try {
+
+            allMessages.iterator().forEach { msg ->
+                if (!msg.sent && mSentCount < 1) {
+
+                    val sentIntent = Intent(context, SentReceiver::class.java).apply {
+                        putExtra(AppConstant.MESSAGE_ID, msg.id)
+                        putExtra(
+                            AppConstant.Reminder.TIME_STAMP,
+                            System.currentTimeMillis()
+                        )
+                        putExtra(AppConstant.Reminder.REMINDER_ID, 6)
+                        putExtra(AppConstant.Reminder.TITLE, "Message Sent Successfully...")
+                    }
+                    sentIntent.action = AppConstant.MESSAGE_SENT
+
+                    val sentPendingIntent = PendingIntent.getBroadcast(
+                        context, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+
+                    val deliveredIntent =
+                        Intent(context, DeliverReceiver::class.java).apply {
+                            putExtra(AppConstant.MESSAGE_ID, msg.id)
+                        }
+                    val deliveredPendingIntent = PendingIntent.getBroadcast(
+                        context, 0, deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+
+                    val sentPIList = ArrayList<PendingIntent>()
+                    val deliveredPIList = ArrayList<PendingIntent>()
+
+
+                    val msgListParts = smsManager.divideMessage(msg.message)
+                    var count = 0
+
+                    repeat(msgListParts.size) {
+                        sentPIList.add(count, sentPendingIntent)
+                        deliveredPIList.add(count, deliveredPendingIntent)
+                        count++
+                    }
+                    MESSAGE_SPLIT_COUNT = count
+
+                    smsManager.sendMultipartTextMessage(
+                        DEFAULT_MOBILE_NO,
+                        null,
+                        msgListParts,
+                        sentPIList,
+                        deliveredPIList
+                    )
+
+                    mSentCount++
+                    if (mSentCount == 1)
+                        return@forEach
+                }
+                index++
+            }
+
+        } catch (e: Exception) {
+            allMessages[index].apply {
+            }
+            sendNotification(
+                context,
+                404,
+                "SMS send error!",
+                "Error -> $e",
+                HomeActivity::class.java
+            )
+            Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
+        }
+    }
+}
+
+fun updateDeliverStatus(context: Context, msgId: Int) {
+    Log.v("MSG_DELIVERED", ">>> Msg delivered Running AsyncTask onStarted()...")
+
+    BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
+
+        override fun onStarted() {
+
+            Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $msgId")
+//            val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
+            val repository = getFromDatabase(context)
+//            val repository = MessageDbRepository(msgDao, id = msgId)
+
+            val message = repository.messageById
+            Log.v("Updated_MSG", ">>> Msg: $message")
+            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
+
+            if (msgId != -1)
+                message.sent = true
+            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
+            repository.updateMessage(message)
+
+            Log.v(
+                "MSG_DELIVERY_STATUS",
+                ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
+            )
+        }
+
+
+        override fun onCompleted() {
+        }
+    }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+
+}
+
+fun Calendar.formatDate(): String? {
+    val simpleDateFormatter = SimpleDateFormat("hh:mm a", Locale.US)
+    return simpleDateFormatter.format(time)
 }
