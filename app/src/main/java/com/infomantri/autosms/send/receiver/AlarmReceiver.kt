@@ -1,12 +1,15 @@
 package com.infomantri.autosms.send.receiver
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -14,10 +17,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.startActivity
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.base.BaseActivity
 import java.text.SimpleDateFormat
+import androidx.core.content.ContextCompat
+import com.infomantri.autosms.send.util.callPhoneNumber
 import java.util.*
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -27,7 +33,10 @@ class AlarmReceiver : BroadcastReceiver() {
         val reminderId = intent?.getIntExtra("reminder_id", 1000) ?: 1111
         val title = intent?.getStringExtra("reminder_title") ?: "title: "
         val timeStamp = intent?.getLongExtra("reminder_timestamp", -1) ?: "timeStamp (Error): ?"
-        val subTitle = "Reminder is fired at : ${SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.US).format(timeStamp)}"
+        val subTitle =
+            "Reminder is fired at : ${SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.US).format(
+                timeStamp
+            )}"
 
         context?.let {
             Log.e("REMINDER", ">>> Reminder recevied 1 ->>>>")
@@ -39,6 +48,8 @@ class AlarmReceiver : BroadcastReceiver() {
             Log.e("REMINDER", ">>> Reminder recevied 3 ->>>>")
             Toast.makeText(context, "REMINDER", Toast.LENGTH_LONG).show()
             Log.e("REMINDER", ">>> Reminder recevied 4 ->>>>")
+
+            context.callPhoneNumber("9321045517")
         }
     }
 
@@ -94,7 +105,11 @@ class AlarmReceiver : BroadcastReceiver() {
         val notificationManager = context
             .getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("AlarmReminderChannel", "Auto SMS Sender channel", NotificationManager.IMPORTANCE_HIGH).apply {
+            val channel = NotificationChannel(
+                "AlarmReminderChannel",
+                "Auto SMS Sender channel",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
                 description = "Text"
             }
             notificationManager?.createNotificationChannel(channel)

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.infomantri.autosms.send">
+        package="com.infomantri.autosms.send">
 
     <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.READ_SMS"/>
-    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
-    <uses-permission android:name="android.permission.WRITE_SMS"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
             android:allowBackup="true"
@@ -16,44 +17,52 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name="com.infomantri.autosms.send.activity.HomeActivity"
-                  android:launchMode="singleTask">
+        <activity
+                android:name="com.infomantri.autosms.send.activity.HomeActivity"
+                android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name="com.infomantri.autosms.send.activity.SettingsActivity"
-                  android:launchMode="singleTask"/>
-        <activity android:name="com.infomantri.autosms.send.base.BaseActivity"
-                  android:launchMode="singleTask"/>
-        <activity android:name="com.infomantri.autosms.send.activity.AddMessages"
-                  android:launchMode="singleTask"/>
-        <activity android:name="com.infomantri.autosms.send.activity.AddAlarmActivity"
-                  android:launchMode="singleTask"/>
-        <activity android:name="com.infomantri.autosms.send.activity.AddAlarmsActivity"
-                android:launchMode="singleTask"/>
+        <activity
+                android:name="com.infomantri.autosms.send.activity.SettingsActivity"
+                android:launchMode="singleTask" />
+        <activity
+                android:name="com.infomantri.autosms.send.base.BaseActivity"
+                android:launchMode="singleTask" />
+        <activity
+                android:name="com.infomantri.autosms.send.activity.AddMessages"
+                android:launchMode="singleTask" />
+        <activity
+                android:name="com.infomantri.autosms.send.activity.AddAlarmActivity"
+                android:launchMode="singleTask" />
+        <activity
+                android:name="com.infomantri.autosms.send.activity.AddAlarmsActivity"
+                android:launchMode="singleTask" />
 
-        <receiver android:name="com.infomantri.autosms.send.receiver.AlarmReceiver"
-                  android:enabled="true">
+        <receiver
+                android:name="com.infomantri.autosms.send.receiver.AlarmReceiver"
+                android:enabled="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.infomantri.autosms.send.receiver.SentReceiver"
-                  android:enabled="true">
-        </receiver>
-        <receiver android:name="com.infomantri.autosms.send.receiver.DeliverReceiver"
-                  android:enabled="true">
+        <receiver
+                android:name="com.infomantri.autosms.send.receiver.SentReceiver"
+                android:enabled="true"></receiver>
+        <receiver
+                android:name="com.infomantri.autosms.send.receiver.DeliverReceiver"
+                android:enabled="true">
             <intent-filter android:priority="1">
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
         <receiver android:name=".receiver.SmsReceiver">
             <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
     </application>

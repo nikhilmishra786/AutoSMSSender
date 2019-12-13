@@ -6,6 +6,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
@@ -37,6 +38,7 @@ import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bootom_sheet.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
+import java.security.Permission
 
 class HomeActivity : BaseActivity() {
 
@@ -51,9 +53,11 @@ class HomeActivity : BaseActivity() {
 
         setToolbar()
         setOnClickListener()
-        checkForPermissions()
+        checkForSmsPermission()
         setRecyclerView()
 //        observeDeleteMessage()
+
+
     }
 
     private fun setToolbar() {
@@ -84,6 +88,16 @@ class HomeActivity : BaseActivity() {
             val intent = Intent(this, SettingsActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
+        }
+
+        btnPhoneCall.setOnClickListener {
+            val callIntent = Intent(Intent.ACTION_CALL, Uri.fromParts("tel", "+919867169318", null))
+//            intent.data = Uri.parse("tel:+919867169318")
+            if (checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                startActivity(callIntent)
+            } else {
+                checkForCallPermission()
+            }
         }
     }
 
@@ -148,8 +162,8 @@ class HomeActivity : BaseActivity() {
                             messageData
                         )
                     })
-                }else {
-                    "Error while deleting message".showSnackbar {  }
+                } else {
+                    "Error while deleting message".showSnackbar { }
                 }
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
@@ -202,7 +216,8 @@ class HomeActivity : BaseActivity() {
     }
 
     private val REQUEST_PERMISSION_SEND_SMS = 99
-    private fun checkForPermissions() {
+    private val REQUEST_CALL_PHONE = 100
+    private fun checkForSmsPermission() {
 // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -225,7 +240,9 @@ class HomeActivity : BaseActivity() {
             // No explanation needed, we can request the permission.
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE),
+                arrayOf(
+                    Manifest.permission.SEND_SMS
+                ),
                 REQUEST_PERMISSION_SEND_SMS
             )
 
@@ -235,7 +252,33 @@ class HomeActivity : BaseActivity() {
 
         } else {
             // Permission has already been granted
-            Log.v("REQUEST_PERMISSION_SMS", ">>> Permission has already been granted...")
+            Log.v("REQUEST_PERMISSION_SMS", ">>> SMS Permission has already been granted...")
+        }
+
+
+    }
+
+    private fun checkForCallPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CALL_PHONE
+            )
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.CALL_PHONE
+                ),
+                REQUEST_CALL_PHONE
+            )
+        } else {
+            // Permission has already been granted
+            Log.v(
+                "REQUEST_PERMISSION_CALL_PHONE",
+                ">>> CALL_PHONE Permission has already been granted..."
+            )
         }
     }
+
 }

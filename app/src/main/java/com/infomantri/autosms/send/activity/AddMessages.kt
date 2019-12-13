@@ -1,14 +1,14 @@
 package com.infomantri.autosms.send.activity
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModelProviders
+import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.database.Message
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
-import android.widget.Toast
-import com.infomantri.autosms.send.R
 import kotlinx.android.synthetic.main.activity_add_message.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
 
@@ -25,6 +25,8 @@ class AddMessages : BaseActivity() {
         mViewModel = ViewModelProviders.of(this).get(MessageViewModel::class.java)
         setToolbar()
         setOnClickListener()
+
+
     }
 
     private fun setToolbar() {

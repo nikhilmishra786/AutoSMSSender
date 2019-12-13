@@ -93,7 +93,7 @@ class AddAlarmsActivity : BaseActivity() {
 
         val swipeHandler = object : SwipeToDeleteCallback(this) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                Log.v("onSwiped", ">>> postion: -> ${viewHolder.adapterPosition}")
+                Log.v("onSwiped", ">>> position: -> ${viewHolder.adapterPosition}")
                 adapter.removeAt(viewHolder.adapterPosition)
             }
         }

@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.database.AddAlarm
-import com.infomantri.autosms.send.R.layout.recyclerview_add_alarm_item
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -40,7 +39,8 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) ->
         var repeatAlarmItemView: Switch = itemView.findViewById(R.id.swRepeatAlarm)
         val alarmStatus: TextView = itemView.findViewById(R.id.tvAlarmStatus)
 
-        val isSelected = repeatAlarmItemView.setOnClickListener{ mRepeatAlarm(repeatAlarmItemView.isChecked) }
+        val isSelected =
+            repeatAlarmItemView.setOnClickListener { mRepeatAlarm(repeatAlarmItemView.isChecked) }
     }
 
     override fun onCreateViewHolder(
@@ -62,7 +62,7 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean) -> Unit, deleteAlarm: (Int) ->
 
         if (DateUtils.getRelativeTimeSpanString(current.alarmTimeStamp).contains("ago")) {
             holder.alarmStatus.setTextColor(Color.parseColor("#E53935"))
-        }else {
+        } else {
             holder.alarmStatus.setTextColor(Color.parseColor("#43A047"))
         }
     }

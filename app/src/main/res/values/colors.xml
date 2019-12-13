@@ -16,6 +16,9 @@
     <color name="orange">#FF7043</color>
     <color name="darkOrange">#F4511E</color>
     <color name="red">#EF5350</color>
+    <color name="cinnabarRed">#E63D38</color>
+    <color name="persianRed">#CF312A</color>
+    
     <color name="favRedColor">#FF2242</color>
     <color name="lightYellow">#FFCA28</color>
     <color name="lightBlue">#29B6F6</color>
@@ -23,5 +26,7 @@
     <color name="lightGrey">#EBE6E6</color>
     <color name="backArrow">#8C98AE</color>
     <color name="darkGrey">#8D99AE</color>
+
+    <color name="fent">#7F2F0935</color>
 
 </resources>
