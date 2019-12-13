@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+<!--    <item-->
+<!--        android:id="@+id/navigation_search_items"-->
+<!--        android:icon="@drawable/ic_search_scan"-->
+<!--        android:title="@string/search_items" />-->
+
+<!--    <item-->
+<!--        android:id="@+id/navigation_favorites"-->
+<!--        android:icon="@drawable/ic_favourites"-->
+<!--        android:title="@string/favorites" />-->
+
+<!--    <item-->
+<!--        android:id="@+id/navigation_downloads"-->
+<!--        android:icon="@drawable/ic_downloads"-->
+<!--        android:title="@string/downloads" />-->
+
+</menu>
