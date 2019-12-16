@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.infomantri.autosms.send.R
+import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.util.getStringFromPreference
@@ -34,21 +35,35 @@ class AlarmReceiver : BroadcastReceiver() {
             "Reminder is fired at : ${SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.US).format(
                 timeStamp
             )}"
+        val isPhoneCallAlarm =
+            intent?.getBooleanExtra(AppConstant.Intent.PHONE_CALL_ALARM, false) ?: false
+        Log.v(
+            "PHONE_CALL_ALARM",
+            ">>> PHONE_CALL_ALARM onReceive() ... $isPhoneCallAlarm timeStamp: $timeStamp"
+        )
+
 
         context?.let {
-            Log.e("REMINDER", ">>> Reminder recevied 1 ->>>>")
-            sendNotification(context, reminderId, title, subTitle, HomeActivity::class.java)
 
             playRingtone(context)
             vibratePhone(context)
-            Log.e("REMINDER", ">>> Reminder recevied 3 ->>>>")
             Toast.makeText(context, "REMINDER", Toast.LENGTH_LONG).show()
-            Log.e("REMINDER", ">>> Reminder recevied 4 ->>>>")
 
-            sendSMS(context)
-            context.phoneCallToNumber(
-                context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
-            )
+            if (isPhoneCallAlarm.not()) {
+                sendSMS(context)
+                sendNotification(context, reminderId, title, subTitle, HomeActivity::class.java)
+            } else {
+                context.phoneCallToNumber(
+                    context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
+                )
+                sendNotification(
+                    context,
+                    AppConstant.Notification.PHONE_CALL,
+                    "Phone Call Alarm Successfully Done",
+                    "Called to Nitin Jio for Alarm Wakeup...",
+                    AddAlarmsActivity::class.java
+                )
+            }
         }
     }
 }

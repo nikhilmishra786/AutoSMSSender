@@ -30,6 +30,14 @@ object AppConstant {
         const val UPDATE_HANDLER = "UpdateHandlerThread"
         const val SENT_HANDLER = "SentHandlerThread"
         const val HOME_HANDLER = "HomeHandlerThread"
+        const val DELETE_ALARM = "DeleteAlarm"
+        const val ADD_ALARM = "AddAlarm"
+        const val PHONE_CALL = "PhoneCall"
+    }
+
+    object Intent {
+        const val PHONE_CALL_ALARM = "phone_call_alarm"
+        const val MESSAGE_ALARM = "message_alarm"
     }
 
     object Error {

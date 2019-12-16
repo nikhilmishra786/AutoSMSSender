@@ -113,37 +113,32 @@ class HomeActivity : BaseActivity() {
             startActivity(intent)
         }
 
-        btnPhoneCall.setOnClickListener {
-            //            phoneCallToNumber("9321045517")
-        }
     }
 
     private fun setRecyclerView() {
         val adapter = MessageListAdapter(copiedText = { copiedText, msg, id ->
             if (id != -1) {
-                var handler: Handler?
-                val handlerThread = HandlerThread(AppConstant.Handler.HOME_HANDLER)
-                handlerThread.also {
-                    it.start()
-                    handler = Handler(it.looper)
-                }
-                handler?.post {
-                    Log.v("Update_Msg", ">>> Inside Copy to Clipboard... msgId: $id message: $msg")
-                    val msgDao = MessageRoomDatabase.getDatabase(application).messageDbDao()
-                    val repository = MessageDbRepository(msgDao, id)
-                    val message = repository.messageById
-                    message.let {
-                        message.sent = false
-                        repository.updateMessage(message)
-                        sendSMS(application)
-                        Log.v("Message", ">>> message: $message")
-                    }
-                }
+//                var handler: Handler?
+//                val handlerThread = HandlerThread(AppConstant.Handler.HOME_HANDLER)
+//                handlerThread.also {
+//                    it.start()
+//                    handler = Handler(it.looper)
+//                }
+//                handler?.post {
+//                    Log.v("Update_Msg", ">>> Inside Copy to Clipboard... msgId: $id message: $msg")
+//                    val msgDao = MessageRoomDatabase.getDatabase(application).messageDbDao()
+//                    val repository = MessageDbRepository(msgDao, id)
+//                    val message = repository.messageById
+//                    message.let {
+//                        message.sent = false
+//                        repository.updateMessage(message)
+//                        sendSMS(application)
+//                        Log.v("Message", ">>> message: $message")
+//                    }
+//                }
 //                deleteMsgById(id)
             } else {
                 copyToClipBoard(copiedText, msg)
-
-
             }
         })
         recyclerview.adapter = adapter

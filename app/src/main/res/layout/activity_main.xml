@@ -31,25 +31,14 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-<!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
-<!--            android:id="@+id/bottomNavigationView"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:background="?android:attr/windowBackground"-->
-<!--            app:itemBackground="@color/white"-->
-<!--            app:labelVisibilityMode="unlabeled"-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:menu="@menu/bottom_navigation_menu" />-->
-
-    <Button
-            android:id="@+id/btnPhoneCall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Call"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-        />
-
+    <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
+    <!--            android:id="@+id/bottomNavigationView"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:background="?android:attr/windowBackground"-->
+    <!--            app:itemBackground="@color/white"-->
+    <!--            app:labelVisibilityMode="unlabeled"-->
+    <!--            app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--            app:menu="@menu/bottom_navigation_menu" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

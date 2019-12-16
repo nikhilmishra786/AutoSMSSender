@@ -10,7 +10,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
 import android.widget.Toast
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.TimerFragment
 import com.infomantri.autosms.send.adapter.AddAlarmsListAdapter
+import com.infomantri.autosms.send.adapter.PhoneCallListAdapter
 import com.infomantri.autosms.send.adapter.SwipeToDeleteCallback
 import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
@@ -28,6 +28,7 @@ import com.infomantri.autosms.send.util.formatDate
 import com.infomantri.autosms.send.util.initViewModel
 import com.infomantri.autosms.send.util.showBlendToast
 import com.infomantri.autosms.send.viewmodel.AddAlarmViewModel
+import com.infomantri.autosms.send.viewmodel.PhoneCallViewModel
 import kotlinx.android.synthetic.main.activity_add_alarms.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
 import java.text.SimpleDateFormat
@@ -43,18 +44,22 @@ class AddAlarmsActivity : BaseActivity() {
 
     private var repeatAlarm: Boolean = false
     private lateinit var mAlarmView: AddAlarmViewModel
+    private lateinit var mPhoneCallViewModel: PhoneCallViewModel
 
     var alarmData =
         AddAlarm(System.currentTimeMillis(), id = -1)
+    var phoneCallAlarmData = PhoneCallAlarm(System.currentTimeMillis(), id = -1)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarms)
 
+        mPhoneCallViewModel = initViewModel()
         mAlarmView = initViewModel()
 
         setToolbar()
         setRecyclerView()
+        PhoneCallRecycler()
         setOnClickListener()
     }
 
@@ -69,7 +74,7 @@ class AddAlarmsActivity : BaseActivity() {
 
     private fun setRecyclerView() {
         val adapter = AddAlarmsListAdapter(repeatAlarm = { repeatAlarm, timeStamp, id ->
-            repeatAlarm.toggleAlarm(timeStamp, id)
+            //            repeatAlarm.toggleAlarm(timeStamp, id)
         }, deleteAlarm = { alarmId ->
             if (alarmId != -1)
                 deleteAlarmById(alarmId)
@@ -77,6 +82,7 @@ class AddAlarmsActivity : BaseActivity() {
                 showBlendToast("Error while deleting", Toast.LENGTH_LONG)
         })
 
+        add_alarm_recyclerview.isNestedScrollingEnabled = false
         add_alarm_recyclerview.adapter = adapter
         add_alarm_recyclerview.addItemDecoration(
             DividerItemDecoration(
@@ -84,10 +90,12 @@ class AddAlarmsActivity : BaseActivity() {
                 DividerItemDecoration.VERTICAL
             )
         )
+
 //        add_alarm_recyclerview.scrollToPosition(0)
         val linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.reverseLayout = true
         linearLayoutManager.stackFromEnd = true
+        linearLayoutManager.isSmoothScrollbarEnabled = true
         add_alarm_recyclerview.layoutManager = linearLayoutManager
 
         val swipeHandler = object : SwipeToDeleteCallback(this) {
@@ -101,8 +109,73 @@ class AddAlarmsActivity : BaseActivity() {
         itemTouchHelper.attachToRecyclerView(add_alarm_recyclerview)
 
         mAlarmView.allAlarms.observe(this, androidx.lifecycle.Observer { alarmList ->
-            adapter.submitList(alarmList)
+            var handler: Handler?
+            val handlerThread = HandlerThread(AppConstant.Handler.ADD_ALARM)
+            handlerThread.also {
+                it.start()
+                handler = Handler(it.looper)
+            }
+            handler?.post {
+                adapter.submitList(alarmList)
+            }
         })
+    }
+
+    private fun PhoneCallRecycler() {
+        val phoneCallAdapter = PhoneCallListAdapter(repeatAlarm = { repeatAlarm, timeStamp, id -> },
+            deleteAlarm = { alarmId ->
+                if (alarmId != -1) {
+                    var handler: Handler?
+                    val handlerThread = HandlerThread(AppConstant.Handler.DELETE_ALARM)
+                    handlerThread.also {
+                        it.start()
+                        handler = Handler(it.looper)
+                    }
+                    handler?.post {
+                        deletePhoneCallAlarm(alarmId)
+                    }
+                } else
+                    showBlendToast("Error while deleting", Toast.LENGTH_LONG)
+            })
+
+        rvPhoneCallAlarm.isNestedScrollingEnabled = false
+        rvPhoneCallAlarm.adapter = phoneCallAdapter
+        rvPhoneCallAlarm.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+            )
+        )
+
+        val linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager.reverseLayout = true
+        linearLayoutManager.stackFromEnd = true
+        linearLayoutManager.isSmoothScrollbarEnabled = true
+        rvPhoneCallAlarm.layoutManager = linearLayoutManager
+
+        val swipeHandler = object : SwipeToDeleteCallback(this) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                Log.v("onSwiped", ">>> position: -> ${viewHolder.adapterPosition}")
+                phoneCallAdapter.removeAt(viewHolder.adapterPosition)
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(rvPhoneCallAlarm)
+
+        mPhoneCallViewModel.allPhoneCallAlarms.observe(
+            this,
+            androidx.lifecycle.Observer { alarmList ->
+                var handler: Handler?
+                val handlerThread = HandlerThread(AppConstant.Handler.PHONE_CALL)
+                handlerThread.also {
+                    it.start()
+                    handler = Handler(it.looper)
+                }
+                handler?.post {
+                    phoneCallAdapter.submitList(alarmList)
+                }
+            })
     }
 
     private fun setOnClickListener() {
@@ -112,7 +185,7 @@ class AddAlarmsActivity : BaseActivity() {
 //        }
 
         toolIvAddAlarm.setOnClickListener {
-            showTimePicker()
+            showTimePicker(false)
         }
 
         toolIvSettings.setOnClickListener {
@@ -127,16 +200,23 @@ class AddAlarmsActivity : BaseActivity() {
             startActivity(intent)
         }
 
+        fabAddMsgAlarm.setOnClickListener {
+            showTimePicker(true)
+        }
+
     }
 
-    private fun showTimePicker() {
-
+    private fun showTimePicker(isAddMsgAlarm: Boolean) {
 
         Calendar.getInstance().apply {
             val timeFragment =
                 TimerFragment.instance(get(Calendar.HOUR_OF_DAY), get(Calendar.MINUTE))
 
-            timeFragment.setTimeChangeListener(mOnTimeChangeListener)
+            if (isAddMsgAlarm) {
+                timeFragment.setTimeChangeListener(mOnTimeChangeListener)
+            } else {
+                timeFragment.setTimeChangeListener(mOnPhoneCallTimeChangeListener)
+            }
             timeFragment.show(supportFragmentManager, "time")
         }
     }
@@ -149,22 +229,64 @@ class AddAlarmsActivity : BaseActivity() {
                 set(Calendar.MINUTE, minute)
             }
             mAlarmView.insert(AddAlarm(addAlarmCalendar.timeInMillis))
-            setRepeatingAlarm(
-                addAlarmCalendar,
-                ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
-                getAlarmTitle(addAlarmCalendar.timeInMillis)
+            setAlarm(
+                calendar = addAlarmCalendar,
+                requestCode = ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
+                title = getAlarmTitle(alarmData.alarmTimeStamp),
+                isAddMsgAlarm = true
             )
+
+//            setRepeatingAlarm(
+//                addAlarmCalendar,
+//                ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
+//                getAlarmTitle(addAlarmCalendar.timeInMillis)
+//            )
 //            showBlendToast("Alarm added at ${addAlarmCalendar.formatDateToTime()}")
             Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
         }
     }
 
-    private fun setAlarm(calendar: Calendar, requestCode: Int, title: String) {
+    private val mOnPhoneCallTimeChangeListener = object : TimerFragment.OnTimeSelected {
+        override fun selectedTime(hour: Int, minute: Int, unit: String) {
 
+            addAlarmCalendar.apply {
+                set(Calendar.HOUR_OF_DAY, if (unit == "PM") hour + 12 else hour)
+                set(Calendar.MINUTE, minute)
+            }
+            mPhoneCallViewModel.insertPhoneCallAlarm(PhoneCallAlarm(addAlarmCalendar.timeInMillis))
+            setAlarm(
+                calendar = addAlarmCalendar,
+                requestCode = ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
+                title = getAlarmTitle(phoneCallAlarmData.alarmTimeStamp),
+                isAddMsgAlarm = false
+            )
+//            setRepeatingAlarm(
+//                addAlarmCalendar,
+//                ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
+//                getAlarmTitle(addAlarmCalendar.timeInMillis)
+//            )
+//            showBlendToast("Alarm added at ${addAlarmCalendar.formatDateToTime()}")
+            Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
+        }
+    }
+
+    private fun setAlarm(
+        calendar: Calendar,
+        requestCode: Int, title: String, isAddMsgAlarm: Boolean
+    ) {
+        Log.v(
+            "SET_ALARM_TIME_STAMP",
+            ">>> SET_ALARM_TIME_STAMP : $requestCode"
+        )
         val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
-            putExtra("reminder_timestamp", calendar.timeInMillis)
-            putExtra("reminder_id", requestCode)
-            putExtra("reminder_title", title)
+            putExtra(AppConstant.Reminder.TIME_STAMP, calendar.timeInMillis)
+            putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
+            putExtra(AppConstant.Reminder.TITLE, title)
+            if (isAddMsgAlarm) {
+                putExtra(AppConstant.Intent.PHONE_CALL_ALARM, false)
+            } else {
+                putExtra(AppConstant.Intent.PHONE_CALL_ALARM, true)
+            }
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -175,7 +297,7 @@ class AddAlarmsActivity : BaseActivity() {
         )
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        if(Date().after(calendar.time)){
+        if (Date().after(calendar.time)) {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
             alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
@@ -183,8 +305,7 @@ class AddAlarmsActivity : BaseActivity() {
                 24 * 60 * 60 * 1000,
                 pendingIntent
             )
-        }
-        else {
+        } else {
             alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
                 calendar.timeInMillis,
@@ -323,10 +444,56 @@ class AddAlarmsActivity : BaseActivity() {
                         )
                         val calendar = Calendar.getInstance()
                         calendar.timeInMillis = alarmData.alarmTimeStamp
-                        setRepeatingAlarm(
+//                        setRepeatingAlarm(
+//                            calendar = calendar,
+//                            requestCode = ((alarmData.alarmTimeStamp).toInt() % 10 * 1000),
+//                            title = getAlarmTitle(alarmData.alarmTimeStamp)
+//                        )
+                        setAlarm(
                             calendar = calendar,
                             requestCode = ((alarmData.alarmTimeStamp).toInt() % 10 * 1000),
-                            title = getAlarmTitle(alarmData.alarmTimeStamp)
+                            title = getAlarmTitle(alarmData.alarmTimeStamp),
+                            isAddMsgAlarm = true
+                        )
+                    })
+                } else {
+                    "Error while deleting alarm".showSnackbar { }
+                }
+            }
+        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+    }
+
+    private fun deletePhoneCallAlarm(msgId: Int) {
+        Log.v("DELETE_MSG", ">>> Inside deleting Msg... <<<")
+        BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
+            override fun onStarted() {
+                Log.v("DELETE_MSG", ">>> deleting Phone Call Alarm...")
+                val phoneCallDao = MessageRoomDatabase.getDatabase(application).phoneCallAlarmDao()
+                val repository = PhoneCallRepository(phoneCallDao, msgId)
+                val alarmToDelete = repository.alarmById
+                phoneCallAlarmData = alarmToDelete
+                repository.deletePhoneCallAlarm(alarmToDelete)
+                cancelAlarm((alarmToDelete.alarmTimeStamp).toInt() % 10 * 1000)
+            }
+
+            override fun onCompleted() {
+                if (alarmData.id != -1) {
+                    "Alarm deleted successfully".showSnackbar(restoreData = {
+                        mPhoneCallViewModel.insertPhoneCallAlarm(
+                            phoneCallAlarmData
+                        )
+                        val calendar = Calendar.getInstance()
+                        calendar.timeInMillis = alarmData.alarmTimeStamp
+//                        setRepeatingAlarm(
+//                            calendar = calendar,
+//                            requestCode = ((alarmData.alarmTimeStamp).toInt() % 10 * 1000),
+//                            title = getAlarmTitle(alarmData.alarmTimeStamp)
+//                        )
+                        setAlarm(
+                            calendar = calendar,
+                            requestCode = ((alarmData.alarmTimeStamp).toInt() % 10 * 1000),
+                            title = getAlarmTitle(alarmData.alarmTimeStamp),
+                            isAddMsgAlarm = false
                         )
                     })
                 } else {

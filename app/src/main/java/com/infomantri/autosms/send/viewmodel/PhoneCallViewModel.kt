@@ -8,30 +8,15 @@ import com.infomantri.autosms.send.database.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class AddAlarmViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val addAlarmLiveDataRepository: AddAlarmLiveDataRepository
-    val allAlarms: LiveData<List<AddAlarm>>
+class PhoneCallViewModel(application: Application) : AndroidViewModel(application) {
 
     private val phoneCallRepository: PhoneCallRepository
     val allPhoneCallAlarms: LiveData<List<PhoneCallAlarm>>
 
     init {
-        val addAlarmDao = MessageRoomDatabase.getDatabase(application).addAlarmLiveDataDao()
-        addAlarmLiveDataRepository = AddAlarmLiveDataRepository(addAlarmDao)
-        allAlarms = addAlarmLiveDataRepository.allAlarms
-
         val phoneCallDao = MessageRoomDatabase.getDatabase(application).phoneCallAlarmDao()
         phoneCallRepository = PhoneCallRepository(phoneCallDao)
         allPhoneCallAlarms = phoneCallRepository.allPhoneCallAlarms
-    }
-
-    fun insert(alarm: AddAlarm) = viewModelScope.launch(Dispatchers.IO) {
-        addAlarmLiveDataRepository.insertAlarm(alarm)
-    }
-
-    fun delete(alarm: AddAlarm) = viewModelScope.launch(Dispatchers.IO) {
-        addAlarmLiveDataRepository.deleteAlarm(alarm)
     }
 
     fun insertPhoneCallAlarm(alarm: PhoneCallAlarm) = viewModelScope.launch(Dispatchers.IO) {

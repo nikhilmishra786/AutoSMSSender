@@ -4,12 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 
 @Dao
-interface AddAlarmLiveDataDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAlarm(alarm: AddAlarm)
-
-    @Query("SELECT * from add_alarm_table")
-    fun getAllAlarms(): LiveData<List<AddAlarm>>
+interface PhoneCallDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPhoneCallAlarm(alarm: PhoneCallAlarm)
@@ -17,11 +12,8 @@ interface AddAlarmLiveDataDao {
     @Query("SELECT * from phone_call_alarm_table")
     fun getAllPhoneCallAlarms(): LiveData<List<PhoneCallAlarm>>
 
-//    @Query("SELECT * from add_alarm_table")
-//    fun getFutureReminder(): LiveData<List<AddAlarm>>
-
-    @Delete
-    fun delete(alarm: AddAlarm)
+    @Query("SELECT * from phone_call_alarm_table WHERE id == :alarmId")
+    fun getAlarmById(alarmId: Int): PhoneCallAlarm
 
     @Delete
     fun deletePhoneCallAlarm(alarm: PhoneCallAlarm)

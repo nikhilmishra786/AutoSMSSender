@@ -4,16 +4,11 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Handler
-import android.os.HandlerThread
 import android.telephony.SmsManager
-import android.text.format.DateUtils
 import android.util.Log
 import android.widget.Toast
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.constants.AppConstant
-import com.infomantri.autosms.send.database.MessageDbRepository
-import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.util.setBooleanFromPreference
 import java.text.SimpleDateFormat
 import java.util.*
