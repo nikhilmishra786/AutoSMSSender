@@ -9,9 +9,9 @@ import androidx.lifecycle.Observer
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.util.*
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import com.infomantri.autosms.send.viewmodel.SubscribersViewModel
-import com.syngenta.pack.util.*
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.activity_settings.view.*
 import kotlinx.android.synthetic.main.custom_toolbar.*

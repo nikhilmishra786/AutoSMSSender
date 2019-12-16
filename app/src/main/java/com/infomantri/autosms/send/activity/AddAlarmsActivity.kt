@@ -24,10 +24,10 @@ import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.*
 import com.infomantri.autosms.send.receiver.AlarmReceiver
+import com.infomantri.autosms.send.util.formatDate
+import com.infomantri.autosms.send.util.initViewModel
+import com.infomantri.autosms.send.util.showBlendToast
 import com.infomantri.autosms.send.viewmodel.AddAlarmViewModel
-import com.syngenta.pack.util.formatDate
-import com.syngenta.pack.util.initViewModel
-import com.syngenta.pack.util.showBlendToast
 import kotlinx.android.synthetic.main.activity_add_alarms.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
 import java.text.SimpleDateFormat
@@ -157,6 +157,42 @@ class AddAlarmsActivity : BaseActivity() {
 //            showBlendToast("Alarm added at ${addAlarmCalendar.formatDateToTime()}")
             Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
         }
+    }
+
+    private fun setAlarm(calendar: Calendar, requestCode: Int, title: String) {
+
+        val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
+            putExtra("reminder_timestamp", calendar.timeInMillis)
+            putExtra("reminder_id", requestCode)
+            putExtra("reminder_title", title)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            requestCode,
+            notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        if(Date().after(calendar.time)){
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+            alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                24 * 60 * 60 * 1000,
+                pendingIntent
+            )
+        }
+        else {
+            alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                24 * 60 * 60 * 1000,
+                pendingIntent
+            )
+        }
+        Log.v("SET_ALARM", ">>> $title: ${calendar.formatDate()}")
     }
 
     private fun setRepeatingAlarm(

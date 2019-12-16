@@ -11,8 +11,8 @@ import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.adapter.AuthorListAdapter
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.database.Message
+import com.infomantri.autosms.send.util.getTrimmedText
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
-import com.syngenta.pack.util.getTrimmedText
 import kotlinx.android.synthetic.main.activity_add_message.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
 

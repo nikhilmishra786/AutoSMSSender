@@ -4,24 +4,17 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Handler
 import android.os.HandlerThread
 import android.telephony.SmsManager
 import android.text.format.DateUtils
 import android.util.Log
 import android.widget.Toast
-import androidx.preference.PreferenceManager
 import com.infomantri.autosms.send.activity.HomeActivity
-import com.infomantri.autosms.send.asynctask.BaseAsyncTask
-import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
-import com.syngenta.pack.util.getFromDatabase
-import com.syngenta.pack.util.sendNotification
-import com.syngenta.pack.util.sendSMS
-import com.syngenta.pack.util.setBooleanFromPreference
+import com.infomantri.autosms.send.util.setBooleanFromPreference
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -39,12 +32,12 @@ class SentReceiver : BroadcastReceiver() {
             "dd-MMM-yyyy hh:mm a",
             Locale.US
         ).format(timeStamp)}"
-        val msgId = intent?.getIntExtra(AppConstant.MESSAGE_ID, -1) ?: -1
+//        val msgId = intent?.getIntExtra(AppConstant.MESSAGE_ID, -1) ?: -1
 
-        Log.v(
-            "Intent_Extras_Sent",
-            ">>> intent extras values: reminderId: $reminderId title: $title timeStamp: $timeStamp subTitle: $subTitle msgId: $msgId"
-        )
+//        Log.v(
+//            "Intent_Extras_Sent",
+//            ">>> intent extras values: reminderId: $reminderId title: $title timeStamp: $timeStamp subTitle: $subTitle msgId: $msgId"
+//        )
 
         context?.let {
             Log.v(
@@ -60,9 +53,7 @@ class SentReceiver : BroadcastReceiver() {
                         context,
                         reminderId,
                         title,
-                        "Message Sent Successfully Id: $msgId Time: ${DateUtils.getRelativeTimeSpanString(
-                            System.currentTimeMillis()
-                        )}}",
+                        "Message Sent Successfully...",
                         HomeActivity::class.java
                     )
                 }
@@ -94,23 +85,9 @@ class SentReceiver : BroadcastReceiver() {
                         context,
                         reminderId,
                         title,
-                        "CANCELED sent MsgId: $msgId Time: ${System.currentTimeMillis()}",
+                        "CANCELED sent ",
                         HomeActivity::class.java
                     )
-
-                    var handler: Handler?
-                    val handlerThread = HandlerThread(AppConstant.Handler.SENT_HANDLER)
-                    handlerThread.also {
-                        it.start()
-                        handler = Handler(it.looper)
-                    }
-                    handler?.post {
-                        Log.v("Update_Msg", ">>> Inside onStarted of Sent.....")
-                        val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
-                        val repository = MessageDbRepository(msgDao, msgId)
-                        val message = repository.messageById
-                        repository.updateMessage(message)
-                    }
                 }
 
                 else -> {

@@ -13,6 +13,12 @@ object AppConstant {
     const val NOTIFICATION_ID = 123456
 
     const val MESSAGE_ID = "message_id"
+    const val MESSAGE = "message"
+
+    object Notification {
+        const val PHONE_CALL = 99
+        const val MSG_DELIVERED = 200
+    }
 
     object Reminder {
         const val TIME_STAMP = "reminder_timestamp"

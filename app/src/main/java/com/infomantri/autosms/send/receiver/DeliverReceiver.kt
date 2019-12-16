@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
@@ -16,16 +15,11 @@ import android.text.format.DateUtils
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.preference.PreferenceManager
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.HomeActivity
-import com.infomantri.autosms.send.asynctask.BaseAsyncTask
-import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
-import com.syngenta.pack.util.*
-import java.util.*
 
 class DeliverReceiver : BroadcastReceiver() {
 

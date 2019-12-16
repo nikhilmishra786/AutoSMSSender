@@ -1,13 +1,16 @@
-package com.syngenta.pack.util
+package com.infomantri.autosms.send.util
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.*
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Handler
@@ -33,6 +36,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
@@ -50,7 +54,18 @@ import com.infomantri.autosms.send.receiver.SentReceiver
 import java.text.SimpleDateFormat
 import java.util.*
 
-val EMAIL = "ajay.n@xcubelabs.com"
+fun Context.phoneCallToNumber(mobileNumber: String) {
+    if (ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CALL_PHONE
+        )
+        == PackageManager.PERMISSION_GRANTED
+    ) {
+        val callIntent = Intent(Intent.ACTION_CALL, Uri.fromParts("tel", "+91$mobileNumber", null))
+        callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(callIntent)
+    }
+}
 
 inline fun <reified T : ViewModel> AppCompatActivity.initViewModel(): T {
     return ViewModelProviders.of(this).get(T::class.java)

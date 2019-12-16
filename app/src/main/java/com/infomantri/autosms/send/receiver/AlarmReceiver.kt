@@ -7,18 +7,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
-import android.os.*
-import android.telephony.SmsManager
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.HomeActivity
-import com.infomantri.autosms.send.asynctask.BaseAsyncTask
-import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
-import com.syngenta.pack.util.*
+import com.infomantri.autosms.send.util.getStringFromPreference
+import com.infomantri.autosms.send.util.phoneCallToNumber
+import com.infomantri.autosms.send.util.sendSMS
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -45,7 +46,9 @@ class AlarmReceiver : BroadcastReceiver() {
             Log.e("REMINDER", ">>> Reminder recevied 4 ->>>>")
 
             sendSMS(context)
-
+            context.phoneCallToNumber(
+                context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
+            )
         }
     }
 }
@@ -64,7 +67,6 @@ fun vibratePhone(context: Context?) {
         vibrator.vibrate(5000)
     }
 }
-
 
 fun sendNotification(
     context: Context, id: Int, title: String,
@@ -114,115 +116,3 @@ fun sendNotification(
 
     notificationManager?.notify(id, notificationBuilder.build())
 }
-
-//fun sendSMS(
-//    context: Context
-//) {
-//    val smsManager = SmsManager.getDefault() as SmsManager
-//    Log.v(
-//        "SmsManager_",
-//        ">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}"
-//    )
-//
-//    val DEFAULT_MOBILE_NO =
-//        getSharedPreference(context).getString(AppConstant.DEFAULT_MOBILE_NO, "9867169318")
-//
-//    BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
-//        override fun onStarted() {
-//            val repository = getFromDatabase(context)
-//            val allMessages = repository.allMessages
-//            var index = 0
-//            var mSentCount = 0
-//
-//            try {
-//                allMessages.iterator().forEach { msg ->
-//                    if (!msg.sent && mSentCount < 1) {
-//
-//                        val sentIntent = Intent(context, SentReceiver::class.java).apply {
-//                            putExtra(AppConstant.MESSAGE_ID, msg.id)
-//                            putExtra(
-//                                AppConstant.Reminder.TIME_STAMP,
-//                                System.currentTimeMillis()
-//                            )
-//                            putExtra(AppConstant.Reminder.REMINDER_ID, 6)
-//                            putExtra(
-//                                AppConstant.Reminder.TITLE,
-//                                "Message Sent Successfully..."
-//                            )
-//                        }
-//
-//                        val sentPendingIntent = PendingIntent.getBroadcast(
-//                            context, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT
-//                        )
-//
-//                        val deliveredIntent =
-//                            Intent(context, DeliverReceiver::class.java).apply {
-//                                putExtra(AppConstant.MESSAGE_ID, msg.id)
-//                            }
-//                        val deliveredPendingIntent = PendingIntent.getBroadcast(
-//                            context, 0, deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT
-//                        )
-//
-//                        val sentPIList = ArrayList<PendingIntent>()
-//                        val deliveredPIList = ArrayList<PendingIntent>()
-//
-//
-//                        val msgListParts = smsManager.divideMessage(msg.message)
-////                                msgListParts.iterator().forEach {msg ->
-////                                    Log.v("DIVIDE_MESSAGE", ">>> divide Msg: $msg\n")
-////                                    deliverPIList.add(deliveredPendingIntent)
-////                                }
-//                        var count = 0
-//
-//                        repeat(msgListParts.size) {
-//                            sentPIList.add(count, sentPendingIntent)
-//                            deliveredPIList.add(count, deliveredPendingIntent)
-//                            count++
-//                        }
-//
-//                        smsManager.sendMultipartTextMessage(
-//                            DEFAULT_MOBILE_NO,
-//                            null,
-//                            msgListParts,
-//                            sentPIList,
-//                            deliveredPIList
-//                        )
-//
-////                            Thread.sleep(2 * 1000)
-//                        mSentCount++
-//                        if (mSentCount == 1)
-//                            return@forEach
-//                    }
-//                    index++
-////                            Log.v(
-////                                "ALL_MESSAGES",
-////                                ">>> all Msg ${msg.message} -> sent: ${msg.sent} -> isFailed: ${msg.isFailed}"
-////                            )
-//                    Log.v("MSG_STATUS_UPDATED", ">>> Msg sent: ${msg.sent}")
-//
-//                    if (msg.id != -1)
-//                        msg.sent = true
-//                    repository.updateMessage(msg)
-//                    Log.v("MSG_STATUS_UPDATED", ">>> Msg sent: ${msg.sent}")
-//                }
-//
-//            } catch (e: Exception) {
-//                allMessages[index].apply {
-//                }
-//                com.syngenta.pack.util.sendNotification(
-//                    context,
-//                    404,
-//                    "SMS send error!",
-//                    "Error -> $e",
-//                    HomeActivity::class.java
-//                )
-//                Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
-//            }
-//        }
-//
-//        override fun onCompleted() {
-//        }
-//    }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-//
-//}
-

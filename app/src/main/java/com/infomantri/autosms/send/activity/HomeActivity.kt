@@ -31,10 +31,11 @@ import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
+import com.infomantri.autosms.send.util.initViewModel
+import com.infomantri.autosms.send.util.sendSMS
+import com.infomantri.autosms.send.util.showBlendToast
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
-import com.syngenta.pack.util.initViewModel
-import com.syngenta.pack.util.sendSMS
-import com.syngenta.pack.util.showBlendToast
+
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bootom_sheet.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
@@ -53,7 +54,8 @@ class HomeActivity : BaseActivity() {
 
         setToolbar()
         setOnClickListener()
-        checkForPermissions()
+        checkForSmsPermission()
+        checkForCallPermission()
         setRecyclerView()
 //        observeDeleteMessage()
         startSmsRetriever()
@@ -61,6 +63,11 @@ class HomeActivity : BaseActivity() {
 //        bottomNavigation = findViewById(R.id.bottomNavigationView)
 //        bottomNavigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        startSmsRetriever()
     }
 
     private fun startSmsRetriever() {
@@ -104,6 +111,10 @@ class HomeActivity : BaseActivity() {
             val intent = Intent(this, SettingsActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
+        }
+
+        btnPhoneCall.setOnClickListener {
+            //            phoneCallToNumber("9321045517")
         }
     }
 
@@ -274,7 +285,8 @@ class HomeActivity : BaseActivity() {
     }
 
     private val REQUEST_PERMISSION_SEND_SMS = 99
-    private fun checkForPermissions() {
+    private val REQUEST_CALL_PHONE = 100
+    private fun checkForSmsPermission() {
 // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -298,9 +310,7 @@ class HomeActivity : BaseActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
-                    Manifest.permission.SEND_SMS,
-                    Manifest.permission.READ_PHONE_STATE,
-                    Manifest.permission.READ_CALL_LOG
+                    Manifest.permission.SEND_SMS
                 ),
                 REQUEST_PERMISSION_SEND_SMS
             )
@@ -311,7 +321,32 @@ class HomeActivity : BaseActivity() {
 
         } else {
             // Permission has already been granted
-            Log.v("REQUEST_PERMISSION_SMS", ">>> Permission has already been granted...")
+            Log.v("REQUEST_PERMISSION_SMS", ">>> SMS Permission has already been granted...")
+        }
+
+
+    }
+
+    private fun checkForCallPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CALL_PHONE
+            )
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.CALL_PHONE
+                ),
+                REQUEST_CALL_PHONE
+            )
+        } else {
+            // Permission has already been granted
+            Log.v(
+                "REQUEST_CALL_PHONE",
+                ">>> CALL_PHONE Permission has already been granted..."
+            )
         }
     }
 }

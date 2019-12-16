@@ -1,4 +1,4 @@
-package com.syngenta.pack.util
+package com.infomantri.autosms.send.util
 
 import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
