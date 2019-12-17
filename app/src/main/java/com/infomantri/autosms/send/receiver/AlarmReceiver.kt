@@ -39,12 +39,12 @@ class AlarmReceiver : BroadcastReceiver() {
             intent?.getBooleanExtra(AppConstant.Intent.PHONE_CALL_ALARM, false) ?: false
         Log.v(
             "PHONE_CALL_ALARM",
-            ">>> PHONE_CALL_ALARM onReceive() ... $isPhoneCallAlarm timeStamp: $timeStamp"
+            ">>> PHONE_CALL_ALARM onReceive() ... $isPhoneCallAlarm timeStamp: $timeStamp Time: ${formatDate(
+                timeStamp as Long
+            )}"
         )
 
-
         context?.let {
-
             playRingtone(context)
             vibratePhone(context)
             Toast.makeText(context, "REMINDER", Toast.LENGTH_LONG).show()
@@ -58,7 +58,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 )
                 sendNotification(
                     context,
-                    AppConstant.Notification.PHONE_CALL,
+                    System.currentTimeMillis().toInt(),
                     "Phone Call Alarm Successfully Done",
                     "Called to Nitin Jio for Alarm Wakeup...",
                     AddAlarmsActivity::class.java
@@ -81,6 +81,11 @@ fun vibratePhone(context: Context?) {
     } else {
         vibrator.vibrate(5000)
     }
+}
+
+fun formatDate(timeStamp: Long): String? {
+    val simpleDateFormatter = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US)
+    return simpleDateFormatter.format(timeStamp)
 }
 
 fun sendNotification(

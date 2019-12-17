@@ -494,7 +494,17 @@ fun updateDeliverStatus(context: Context, msgId: Int) {
 
 }
 
-fun Calendar.formatDate(): String? {
+fun Calendar.formatTime(): String? {
     val simpleDateFormatter = SimpleDateFormat("hh:mm a", Locale.US)
     return simpleDateFormatter.format(time)
+}
+
+fun Calendar.formatDate(): String? {
+    val simpleDateFormatter = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US)
+    return simpleDateFormatter.format(time)
+}
+
+fun Long.formatTime(): String? {
+    val simpleDateFormatter = SimpleDateFormat("hh:mm a", Locale.US)
+    return simpleDateFormatter.format(this)
 }

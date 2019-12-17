@@ -48,11 +48,7 @@
 
         <receiver
                 android:name=".receiver.AlarmReceiver"
-                android:enabled="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
+                android:enabled="true" />
         <receiver
                 android:name=".receiver.SentReceiver"
                 android:enabled="true" />
@@ -72,6 +68,10 @@
                 <action android:name="com.google.android.gms.auth.api.phone.SMS_RETRIEVED" />
             </intent-filter>
         </receiver>
+        <receiver
+                android:name=".receiver.DozeReceiver"
+                android:enabled="true" />
+
     </application>
 
 </manifest>

@@ -27,7 +27,10 @@ class SmsReceiver : BroadcastReceiver() {
         if (SmsRetriever.SMS_RETRIEVED_ACTION == intent?.action) {
             val bundle = intent.extras
             val status = bundle?.get(SmsRetriever.EXTRA_STATUS) as Status
-            Log.v("SMS_RECEIVER", ">>> SMS Received successfully... $ SmsRetriever.SMS_RETRIEVED_ACTION")
+            Log.v(
+                "SMS_RECEIVER",
+                ">>> SMS Received successfully... $ SmsRetriever.SMS_RETRIEVED_ACTION"
+            )
 
             when (status.statusCode) {
                 CommonStatusCodes.SUCCESS -> {
@@ -51,11 +54,12 @@ class SmsReceiver : BroadcastReceiver() {
                                 Handler().postDelayed(
                                     {
                                         context.phoneCallToNumber(
-                                            context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
+                                            context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
+                                                ?: "9321045517"
                                         )
                                         sendNotification(
                                             context,
-                                            AppConstant.Notification.PHONE_CALL,
+                                            System.currentTimeMillis().toInt(),
                                             "Phone Call Alarm Successfully Done",
                                             "Called to Nitin Jio for Alarm Wakeup...",
                                             AddAlarmsActivity::class.java
@@ -63,7 +67,11 @@ class SmsReceiver : BroadcastReceiver() {
                                     },
                                     extractTimeFromMsg(message) * 60 * 1000
                                 )
-                                sendSMS(context, message)
+                                val sendMessage =
+                                    "Your Alarm has been set at Time: ${extractTimeFromMsg(message)}".plus(
+                                        if (message.contains("min")) "minutes" else "hours"
+                                    )
+                                sendSMS(context, sendMessage)
                             } else {
                                 //                            if (code.value.toInt() % 10 == 0)
                                 sendSMS(

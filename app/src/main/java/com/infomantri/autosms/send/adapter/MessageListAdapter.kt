@@ -16,10 +16,11 @@ import com.infomantri.autosms.send.database.Message
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MessageListAdapter(copiedText: (String, String, Int) -> Unit) :
+class MessageListAdapter(copiedText: (String, String, Int) -> Unit, deleteMsg: (Int) -> Unit) :
     ListAdapter<Message, MessageListAdapter.MsgViewHolder>(DIFF_UTIL) {
 
     val mCopiedText = copiedText
+    val mDeleteMsg = deleteMsg
 
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<Message>() {
@@ -82,7 +83,7 @@ class MessageListAdapter(copiedText: (String, String, Int) -> Unit) :
     }
 
     fun removeAt(position: Int) {
-        mCopiedText(getItem(position).message, getItem(position).message, getItem(position).id)
+        mDeleteMsg(getItem(position).id)
     }
 
 }
