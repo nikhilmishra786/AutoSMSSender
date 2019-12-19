@@ -29,10 +29,7 @@ import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.*
 import com.infomantri.autosms.send.receiver.AlarmReceiver
 import com.infomantri.autosms.send.receiver.DozeReceiver
-import com.infomantri.autosms.send.util.formatDate
-import com.infomantri.autosms.send.util.formatTime
-import com.infomantri.autosms.send.util.initViewModel
-import com.infomantri.autosms.send.util.showBlendToast
+import com.infomantri.autosms.send.util.*
 import com.infomantri.autosms.send.viewmodel.AddAlarmViewModel
 import com.infomantri.autosms.send.viewmodel.PhoneCallViewModel
 import kotlinx.android.synthetic.main.activity_add_alarms.*
@@ -61,7 +58,7 @@ class AddAlarmsActivity : BaseActivity() {
         PhoneCallRecycler()
         setOnClickListener()
         checkForCallPermission()
-        setDozeModeAlarm()
+        tvDozeAlarm.text = getLongFromPreference(AppConstant.DOZE_ALARM)?.formatTime() ?: "NULL"
     }
 
     private fun setToolbar() {
@@ -205,47 +202,67 @@ class AddAlarmsActivity : BaseActivity() {
             showTimePicker(true)
         }
 
+        tvDozeAlarm.setOnClickListener {
+            Calendar.getInstance().apply {
+                val timeFragment =
+                    TimerFragment.instance(get(Calendar.HOUR_OF_DAY), get(Calendar.MINUTE))
+                timeFragment.setTimeChangeListener(mOnDozeChangeListener)
+                timeFragment.show(supportFragmentManager, "time")
+            }
+        }
+
     }
 
-    private fun setDozeModeAlarm() {
-        val morningAlarm = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 4)
-            set(Calendar.MINUTE, 29)
+    private fun setDozeModeAlarm(
+        calendar: Calendar,
+        requestCode: Int, title: String
+    ) {
+//        val morningAlarm = Calendar.getInstance().apply {
+//            set(Calendar.HOUR_OF_DAY, 4)
+//            set(Calendar.MINUTE, 29)
+//            set(Calendar.SECOND, 0)
+//        }
+        calendar.apply {
             set(Calendar.SECOND, 0)
         }
+
         val notifyIntent = Intent(this, DozeReceiver::class.java).apply {
-            putExtra(AppConstant.Reminder.TIME_STAMP, morningAlarm.timeInMillis)
-            putExtra(AppConstant.Reminder.REMINDER_ID, System.currentTimeMillis().toInt() * 1000)
+            putExtra(AppConstant.Reminder.TIME_STAMP, calendar.timeInMillis)
+            putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
             putExtra(AppConstant.Reminder.TITLE, title)
+            action = AppConstant.Intent.ACTION_DOZE_MODE_ALARM
         }
         notifyIntent.action = "action.doze.alarm"
 
         val pendingIntent = PendingIntent.getBroadcast(
             this,
-            System.currentTimeMillis().toInt() * 1000,
+            requestCode,
             notifyIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        if (Date().after(morningAlarm.time)) {
-            morningAlarm.add(Calendar.DAY_OF_MONTH, 1)
+        if (Date().after(calendar.time)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                morningAlarm.timeInMillis,
+                calendar.timeInMillis,
                 pendingIntent
             )
         } else {
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                morningAlarm.timeInMillis,
+                calendar.timeInMillis,
                 pendingIntent
             )
         }
+        addLongToPreference(AppConstant.DOZE_ALARM, calendar.timeInMillis)
+        tvDozeAlarm.text = calendar.formatTime()
         Log.v(
             "SET_ALARM",
-            ">>> $title: Time: ${morningAlarm.formatTime()} Date: ${morningAlarm.formatDate()}"
+            ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
         )
+
     }
 
     private fun showTimePicker(isAddMsgAlarm: Boolean) {
@@ -303,8 +320,32 @@ class AddAlarmsActivity : BaseActivity() {
             setAlarm(
                 calendar = addAlarmCalendar,
                 requestCode = ((addAlarmCalendar.timeInMillis).toInt() * 1000),
-                title = getAlarmTitle(phoneCallAlarmData.alarmTimeStamp),
+                title = getAlarmTitle(addAlarmCalendar.timeInMillis),
                 isAddMsgAlarm = false
+            )
+//            setRepeatingAlarm(
+//                addAlarmCalendar,
+//                ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
+//                getAlarmTitle(addAlarmCalendar.timeInMillis)
+//            )
+//            showBlendToast("Alarm added at ${addAlarmCalendar.formatDateToTime()}")
+            Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
+        }
+    }
+
+    private val mOnDozeChangeListener = object : TimerFragment.OnTimeSelected {
+        override fun selectedTime(hour: Int, minute: Int, unit: String) {
+            val addAlarmCalendar = Calendar.getInstance()
+
+            addAlarmCalendar.apply {
+                set(Calendar.HOUR_OF_DAY, if (unit == "PM") hour + 12 else hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+            }
+            setDozeModeAlarm(
+                addAlarmCalendar,
+                addAlarmCalendar.timeInMillis.toInt() * 1000,
+                getAlarmTitle(addAlarmCalendar.timeInMillis)
             )
 //            setRepeatingAlarm(
 //                addAlarmCalendar,
@@ -361,6 +402,11 @@ class AddAlarmsActivity : BaseActivity() {
                 pendingIntent
             )
         }
+
+        when (calendar.get(Calendar.HOUR_OF_DAY)) {
+            in 0..7 -> setDozeModeAlarm(calendar, requestCode, title)
+        }
+
         Log.v(
             "SET_ALARM",
             ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"

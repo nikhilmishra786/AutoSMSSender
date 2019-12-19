@@ -21,18 +21,20 @@ class DozeReceiver : BroadcastReceiver() {
             playRingtone(context)
             vibratePhone(context)
 
-            context.phoneCallToNumber(
-                context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
-            )
-            sendNotification(
-                context,
-                System.currentTimeMillis().toInt(),
-                "Phone Call Alarm Successfully Done",
-                "Called to Nitin Jio for Alarm Wakeup...",
-                AddAlarmsActivity::class.java,
-                channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
-                channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
-            )
+            if (intent?.action == AppConstant.Intent.ACTION_DOZE_MODE_ALARM) {
+                context.phoneCallToNumber(
+                    context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
+                )
+                sendNotification(
+                    context,
+                    System.currentTimeMillis().toInt(),
+                    "Phone Call Alarm Successfully Done",
+                    "Called to Nitin Jio for Alarm Wakeup...",
+                    AddAlarmsActivity::class.java,
+                    channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
+                    channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
+                )
+            }
         }
     }
 

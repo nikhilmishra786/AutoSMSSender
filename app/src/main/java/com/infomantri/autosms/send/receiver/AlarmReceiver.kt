@@ -51,9 +51,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 sendSMS(context)
             }
 
-            if (isPhoneCallAlarm.not()) {
-
-            } else {
+            if (intent?.action == AppConstant.Intent.ACTION_PHONE_CALL_ALARM) {
                 context.phoneCallToNumber(
                     context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
                 )

@@ -203,6 +203,15 @@ fun Context.getIntFromPreference(key: String): Int? {
     return PreferenceManager.getDefaultSharedPreferences(this).getInt(key, 0)
 }
 
+fun Context.addLongToPreference(key: String, value: Long) {
+    PreferenceManager.getDefaultSharedPreferences(this).edit()
+        .putLong(key, value).apply()
+}
+
+fun Context.getLongFromPreference(key: String): Long? {
+    return PreferenceManager.getDefaultSharedPreferences(this).getLong(key, 0)
+}
+
 fun Context.setBooleanFromPreference(key: String, value: Boolean) {
     PreferenceManager.getDefaultSharedPreferences(this).edit()
         .putBoolean(key, value).apply()

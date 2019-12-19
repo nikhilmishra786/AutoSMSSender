@@ -15,6 +15,8 @@ object AppConstant {
     const val MESSAGE_ID = "message_id"
     const val MESSAGE = "message"
 
+    const val DOZE_ALARM = "doze_alarm"
+
     object Notification {
         const val PHONE_CALL = 99
         const val MSG_DELIVERED = 200
@@ -48,6 +50,7 @@ object AppConstant {
     object Intent {
         const val ACTION_PHONE_CALL_ALARM = "action.phone.call.alarm"
         const val ACTION_MESSAGE_ALARM = "action.message.alarm"
+        const val ACTION_DOZE_MODE_ALARM = "action.doze.alarm"
 
         const val PHONE_CALL_ALARM = "phone_call_alarm"
         const val MESSAGE_ALARM = "message_alarm"
