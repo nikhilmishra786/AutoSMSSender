@@ -18,7 +18,17 @@ object AppConstant {
     object Notification {
         const val PHONE_CALL = 99
         const val MSG_DELIVERED = 200
+
+        object Channel {
+            const val MESSAGE_CHANNEL_ID = "MessageChannel"
+            const val MESSAGE_CHANNEL = "Message Channel"
+            const val MESSAGE_CONFIRMATION_CHANNEL_ID = "MessageConfirmationChannelId"
+            const val MESSAGE_CONFIRMATION_CHANNEL = "MessageConfirmationChannel"
+            const val PHONE_CALL_CHANNEL_ID = "PhoneCallChannelId"
+            const val PHONE_CALL_CHANNEL = "PhoneCallChannel"
+        }
     }
+
 
     object Reminder {
         const val TIME_STAMP = "reminder_timestamp"
@@ -36,6 +46,9 @@ object AppConstant {
     }
 
     object Intent {
+        const val ACTION_PHONE_CALL_ALARM = "action.phone.call.alarm"
+        const val ACTION_MESSAGE_ALARM = "action.message.alarm"
+
         const val PHONE_CALL_ALARM = "phone_call_alarm"
         const val MESSAGE_ALARM = "message_alarm"
     }

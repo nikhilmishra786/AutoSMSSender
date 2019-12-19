@@ -11,6 +11,7 @@ class MessageDbRepository(
     val allMessages: List<Message> = msgDao.getAllMessages()
     val messageById: Message = msgDao.getMessageById(id)
     val messageByTimeStamp: Message = msgDao.getMessageByTimeStamp(msg)
+    val getSentMessages: List<Message> = msgDao.getSentMessages()
 
     @WorkerThread
     suspend fun insertMessage(msg: Message) {

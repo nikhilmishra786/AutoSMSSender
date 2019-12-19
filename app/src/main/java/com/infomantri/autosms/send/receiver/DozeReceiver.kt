@@ -12,6 +12,7 @@ import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.util.getStringFromPreference
 import com.infomantri.autosms.send.util.phoneCallToNumber
+import com.infomantri.autosms.send.util.sendNotification
 
 class DozeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -28,7 +29,9 @@ class DozeReceiver : BroadcastReceiver() {
                 System.currentTimeMillis().toInt(),
                 "Phone Call Alarm Successfully Done",
                 "Called to Nitin Jio for Alarm Wakeup...",
-                AddAlarmsActivity::class.java
+                AddAlarmsActivity::class.java,
+                channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
+                channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
             )
         }
     }

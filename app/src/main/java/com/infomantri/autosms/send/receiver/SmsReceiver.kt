@@ -15,11 +15,14 @@ import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.util.getStringFromPreference
 import com.infomantri.autosms.send.util.phoneCallToNumber
+import com.infomantri.autosms.send.util.sendNotification
 import com.infomantri.autosms.send.util.sendSMS
+import kotlinx.coroutines.*
 
 class SmsReceiver : BroadcastReceiver() {
 
     private val codePattern = "(\\d{4})".toRegex()
+    private val mJob = Job()
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
@@ -49,29 +52,37 @@ class SmsReceiver : BroadcastReceiver() {
                                     "Alarm Request Received from Nitin Jio ${extractTimeFromMsg(
                                         message
                                     )}...",
-                                    AddAlarmsActivity::class.java
+                                    AddAlarmsActivity::class.java,
+                                    channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
+                                    channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
                                 )
-                                Handler().postDelayed(
-                                    {
-                                        context.phoneCallToNumber(
-                                            context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
-                                                ?: "9321045517"
-                                        )
-                                        sendNotification(
-                                            context,
-                                            System.currentTimeMillis().toInt(),
-                                            "Phone Call Alarm Successfully Done",
-                                            "Called to Nitin Jio for Alarm Wakeup...",
-                                            AddAlarmsActivity::class.java
-                                        )
-                                    },
-                                    extractTimeFromMsg(message) * 60 * 1000
-                                )
-                                val sendMessage =
-                                    "Your Alarm has been set at Time: ${extractTimeFromMsg(message)}".plus(
-                                        if (message.contains("min")) "minutes" else "hours"
+
+                                CoroutineScope(Dispatchers.Default + mJob).launch {
+                                    context.phoneCallToNumber(
+                                        context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
+                                            ?: "9321045517"
                                     )
-                                sendSMS(context, sendMessage)
+                                    sendNotification(
+                                        context,
+                                        System.currentTimeMillis().toInt(),
+                                        "Phone Call Alarm Successfully Done",
+                                        "Called to Nitin Jio for Alarm Wakeup...",
+                                        AddAlarmsActivity::class.java,
+                                        channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
+                                        channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
+                                    )
+
+                                    extractTimeFromMsg(message) * 60 * 1000
+                                    val sendMessage =
+                                        "Your Alarm has been set at Time: ${extractTimeFromMsg(
+                                            message
+                                        )}".plus(
+                                            if (message.contains("min")) "minutes" else "hours"
+                                        )
+                                    sendSMS(context, sendMessage)
+                                }
+
+
                             } else {
                                 //                            if (code.value.toInt() % 10 == 0)
                                 sendSMS(
@@ -118,7 +129,7 @@ class SmsReceiver : BroadcastReceiver() {
         return 10
     }
 
-    fun sendSMS(
+    private fun sendSMS(
         context: Context, message: String
     ) {
         var handler: Handler?
@@ -142,7 +153,7 @@ class SmsReceiver : BroadcastReceiver() {
                         AppConstant.Reminder.TIME_STAMP,
                         System.currentTimeMillis()
                     )
-                    putExtra(AppConstant.Reminder.REMINDER_ID, 6)
+                    putExtra(AppConstant.Reminder.REMINDER_ID, System.currentTimeMillis().toInt())
                     putExtra(AppConstant.Reminder.TITLE, "Message Sent Successfully...")
                 }
                 sentIntent.action = AppConstant.MESSAGE_SENT

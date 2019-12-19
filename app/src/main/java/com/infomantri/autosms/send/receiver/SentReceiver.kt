@@ -44,13 +44,6 @@ class SentReceiver : BroadcastReceiver() {
 
                 Activity.RESULT_OK -> {
                     toast(context, "Message sent successfully...", false)
-                    sendNotification(
-                        context,
-                        reminderId,
-                        title,
-                        "Message Sent Successfully...",
-                        HomeActivity::class.java
-                    )
                 }
 
                 SmsManager.RESULT_ERROR_GENERIC_FAILURE -> {
@@ -76,13 +69,6 @@ class SentReceiver : BroadcastReceiver() {
                     )
 
                     toast(context, "Message sent successfully...", false)
-                    sendNotification(
-                        context,
-                        reminderId,
-                        title,
-                        "CANCELED sent ",
-                        HomeActivity::class.java
-                    )
                 }
 
                 else -> {

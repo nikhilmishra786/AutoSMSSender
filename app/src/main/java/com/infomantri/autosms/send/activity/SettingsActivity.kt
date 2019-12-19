@@ -33,11 +33,7 @@ class SettingsActivity : BaseActivity() {
         setOnClickListener()
 
         mMessageViewModel.getSentMsgCount.observe(this, Observer { msgCount ->
-            var count = 0
-            msgCount.iterator().forEach {
-                count++
-            }
-            tvTotalMsgSentValue.text = count.toString()
+            tvTotalMsgSentValue.text = msgCount.size.toString()
         })
     }
 

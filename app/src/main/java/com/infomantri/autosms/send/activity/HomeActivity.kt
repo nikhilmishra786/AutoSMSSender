@@ -113,6 +113,10 @@ class HomeActivity : BaseActivity() {
             startActivity(intent)
         }
 
+        btnSendSms.setOnClickListener {
+            sendSMS(context = this)
+        }
+
     }
 
     private fun setRecyclerView() {

@@ -1,5 +1,7 @@
 package com.infomantri.autosms.send.activity
 
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -30,6 +32,7 @@ class AddMessages : BaseActivity() {
         setToolbar()
         setOnClickListener()
         setRecyclerView()
+        etEnterMessage.setText(getClipBoardData())
     }
 
     private fun setRecyclerView() {
@@ -93,5 +96,10 @@ class AddMessages : BaseActivity() {
     private fun appendAuthorName(authorName: String, editText: EditText) {
         val messageText = editText.getTrimmedText().plus(" - ".plus(authorName))
         editText.setText(messageText, TextView.BufferType.EDITABLE)
+    }
+
+    private fun getClipBoardData(): String {
+        val clipBoardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        return clipBoardManager.primaryClip?.getItemAt(0)?.text.toString()
     }
 }

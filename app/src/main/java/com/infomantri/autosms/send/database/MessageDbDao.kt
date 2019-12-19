@@ -20,6 +20,9 @@ interface MessageDbDao {
     @Query("SELECT * from message_table WHERE message = :mMsg")
     fun getMessageByTimeStamp(mMsg: String): Message
 
+    @Query("SELECT * from message_table where sent == 1")
+    fun getSentMessages(): List<Message>
+
     @Delete
     fun deleteMessage(message: Message)
 

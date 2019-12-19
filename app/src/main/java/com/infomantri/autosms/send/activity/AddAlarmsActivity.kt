@@ -41,12 +41,6 @@ import java.util.*
 
 class AddAlarmsActivity : BaseActivity() {
 
-    private val addAlarmCalendar by lazy {
-        Calendar.getInstance().apply {
-            set(Calendar.SECOND, 0)
-        }
-    }
-
     private var repeatAlarm: Boolean = false
     private lateinit var mAlarmView: AddAlarmViewModel
     private lateinit var mPhoneCallViewModel: PhoneCallViewModel
@@ -271,10 +265,12 @@ class AddAlarmsActivity : BaseActivity() {
 
     private val mOnTimeChangeListener = object : TimerFragment.OnTimeSelected {
         override fun selectedTime(hour: Int, minute: Int, unit: String) {
+            val addAlarmCalendar = Calendar.getInstance()
 
             addAlarmCalendar.apply {
                 set(Calendar.HOUR_OF_DAY, if (unit == "PM") hour + 12 else hour)
                 set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
             }
             mAlarmView.insert(AddAlarm(addAlarmCalendar.timeInMillis))
             setAlarm(
@@ -296,15 +292,17 @@ class AddAlarmsActivity : BaseActivity() {
 
     private val mOnPhoneCallTimeChangeListener = object : TimerFragment.OnTimeSelected {
         override fun selectedTime(hour: Int, minute: Int, unit: String) {
+            val addAlarmCalendar = Calendar.getInstance()
 
             addAlarmCalendar.apply {
                 set(Calendar.HOUR_OF_DAY, if (unit == "PM") hour + 12 else hour)
                 set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
             }
             mPhoneCallViewModel.insertPhoneCallAlarm(PhoneCallAlarm(addAlarmCalendar.timeInMillis))
             setAlarm(
                 calendar = addAlarmCalendar,
-                requestCode = ((addAlarmCalendar.timeInMillis).toInt() / 1000),
+                requestCode = ((addAlarmCalendar.timeInMillis).toInt() * 1000),
                 title = getAlarmTitle(phoneCallAlarmData.alarmTimeStamp),
                 isAddMsgAlarm = false
             )
@@ -331,8 +329,10 @@ class AddAlarmsActivity : BaseActivity() {
             putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
             putExtra(AppConstant.Reminder.TITLE, title)
             if (isAddMsgAlarm) {
+                action = AppConstant.Intent.ACTION_MESSAGE_ALARM
                 putExtra(AppConstant.Intent.PHONE_CALL_ALARM, false)
             } else {
+                action = AppConstant.Intent.ACTION_PHONE_CALL_ALARM
                 putExtra(AppConstant.Intent.PHONE_CALL_ALARM, true)
             }
         }
@@ -443,36 +443,36 @@ class AddAlarmsActivity : BaseActivity() {
         Log.v("SET_ALARM", ">>> Non-Repeating -> $title: ${calendar.formatTime()}")
     }
 
-    private fun Boolean.toggleAlarm(timeStamp: Long, alarmId: Int) {
-
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = timeStamp
-        val requestCode = (timeStamp).toInt() * 1000
-        cancelAlarm(requestCode)
-
-        if (this) {
-            setRepeatingAlarm(calendar, requestCode, getAlarmTitle(addAlarmCalendar.timeInMillis))
-        } else {
-            cancelAlarm(requestCode)
-            var handler: Handler?
-            val handlerThread = HandlerThread(AppConstant.Handler.UPDATE_HANDLER)
-            handlerThread.also {
-                it.start()
-                handler = Handler(it.looper)
-            }
-            handler?.post {
-                val addAlarmDao = MessageRoomDatabase.getDatabase(application).addAlarmDao()
-                val repository = AddAlarmRepository(addAlarmDao, alarmId)
-                val alarm = repository.alarmById
-                alarm.repeatAlarm = this
-                repository.updateAlarm(alarm)
-                Log.v(
-                    "ALARM_BY_ID",
-                    ">>> alarm: ${alarm.alarmTimeStamp.formatTime()} repeat: ${repository.alarmById.repeatAlarm}"
-                )
-            }
-        }
-    }
+//    private fun Boolean.toggleAlarm(timeStamp: Long, alarmId: Int) {
+//
+//        val calendar = Calendar.getInstance()
+//        calendar.timeInMillis = timeStamp
+//        val requestCode = (timeStamp).toInt() * 1000
+//        cancelAlarm(requestCode)
+//
+//        if (this) {
+//            setRepeatingAlarm(calendar, requestCode, getAlarmTitle(addAlarmCalendar.timeInMillis))
+//        } else {
+//            cancelAlarm(requestCode)
+//            var handler: Handler?
+//            val handlerThread = HandlerThread(AppConstant.Handler.UPDATE_HANDLER)
+//            handlerThread.also {
+//                it.start()
+//                handler = Handler(it.looper)
+//            }
+//            handler?.post {
+//                val addAlarmDao = MessageRoomDatabase.getDatabase(application).addAlarmDao()
+//                val repository = AddAlarmRepository(addAlarmDao, alarmId)
+//                val alarm = repository.alarmById
+//                alarm.repeatAlarm = this
+//                repository.updateAlarm(alarm)
+//                Log.v(
+//                    "ALARM_BY_ID",
+//                    ">>> alarm: ${alarm.alarmTimeStamp.formatTime()} repeat: ${repository.alarmById.repeatAlarm}"
+//                )
+//            }
+//        }
+//    }
 
     private fun deleteAlarmById(msgId: Int) {
         Log.v("DELETE_MSG", ">>> Inside deleting Msg... <<<")
@@ -485,6 +485,10 @@ class AddAlarmsActivity : BaseActivity() {
                 alarmData = alarmToDelete
                 repository.deleteAlarm(alarmToDelete)
                 cancelAlarm((alarmToDelete.alarmTimeStamp).toInt() * 1000)
+                Log.v(
+                    "Alarm_To_Delete",
+                    ">>> Alarm_To_Delete requestCode : ${alarmToDelete.alarmTimeStamp.toInt() * 1000}"
+                )
             }
 
             override fun onCompleted() {
@@ -525,25 +529,29 @@ class AddAlarmsActivity : BaseActivity() {
                 phoneCallAlarmData = alarmToDelete
                 repository.deletePhoneCallAlarm(alarmToDelete)
                 cancelAlarm((alarmToDelete.alarmTimeStamp).toInt() * 1000)
+                Log.v(
+                    "Alarm_To_Delete",
+                    ">>> Alarm_To_Delete requestCode : ${alarmToDelete.alarmTimeStamp.toInt() * 1000}"
+                )
             }
 
             override fun onCompleted() {
-                if (alarmData.id != -1) {
+                if (phoneCallAlarmData.id != -1) {
                     "Alarm deleted successfully".showSnackbar(restoreData = {
                         mPhoneCallViewModel.insertPhoneCallAlarm(
                             phoneCallAlarmData
                         )
                         val calendar = Calendar.getInstance()
-                        calendar.timeInMillis = alarmData.alarmTimeStamp
+                        calendar.timeInMillis = phoneCallAlarmData.alarmTimeStamp
 //                        setRepeatingAlarm(
 //                            calendar = calendar,
-//                            requestCode = ((alarmData.alarmTimeStamp).toInt() % 10 * 1000),
-//                            title = getAlarmTitle(alarmData.alarmTimeStamp)
+//                            requestCode = ((phoneCallAlarmData.alarmTimeStamp).toInt() % 10 * 1000),
+//                            title = getAlarmTitle(phoneCallAlarmData.alarmTimeStamp)
 //                        )
                         setAlarm(
                             calendar = calendar,
-                            requestCode = ((alarmData.alarmTimeStamp).toInt() * 1000),
-                            title = getAlarmTitle(alarmData.alarmTimeStamp),
+                            requestCode = ((phoneCallAlarmData.alarmTimeStamp).toInt() * 1000),
+                            title = getAlarmTitle(phoneCallAlarmData.alarmTimeStamp),
                             isAddMsgAlarm = false
                         )
                     })

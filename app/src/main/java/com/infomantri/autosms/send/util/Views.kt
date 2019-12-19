@@ -47,10 +47,15 @@ import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.base.BaseActivity.Companion.MESSAGE_SPLIT_COUNT
 import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.constants.AppConstant.DEFAULT_MOBILE_NO
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.receiver.DeliverReceiver
 import com.infomantri.autosms.send.receiver.SentReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -311,7 +316,9 @@ fun TextView.multiColorTextView(
 fun sendNotification(
     context: Context, id: Int, title: String,
     subTitle: String,
-    activity: Class<*>
+    activity: Class<*>,
+    channelId: String,
+    channelName: String
 ) {
 
     val intent = Intent(context, activity)
@@ -345,8 +352,8 @@ fun sendNotification(
         .getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val channel = NotificationChannel(
-            "AlarmReminderChannel",
-            "Auto SMS Sender channel",
+            channelId,
+            channelName,
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Text"
@@ -364,85 +371,102 @@ fun getFromDatabase(context: Context): MessageDbRepository {
     return MessageDbRepository(msgDao)
 }
 
+fun requestSendSMS(context: Context, messageId: Int, message: String) {
+    val DEFAULT_MOBILE_NO =
+        context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
+
+    val smsManager = SmsManager.getDefault() as SmsManager
+    val sentIntent = Intent(context, SentReceiver::class.java).apply {
+        putExtra(AppConstant.MESSAGE_ID, messageId)
+        putExtra(
+            AppConstant.Reminder.TIME_STAMP,
+            System.currentTimeMillis()
+        )
+        putExtra(
+            AppConstant.Reminder.REMINDER_ID,
+            System.currentTimeMillis().toInt()
+        )
+        putExtra(AppConstant.Reminder.TITLE, "Message Sent Successfully...")
+    }
+    sentIntent.action = AppConstant.MESSAGE_SENT
+
+    val sentPendingIntent = PendingIntent.getBroadcast(
+        context,
+        System.currentTimeMillis().toInt(),
+        sentIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+    val deliveredIntent =
+        Intent(context, DeliverReceiver::class.java).apply {
+            putExtra(AppConstant.MESSAGE_ID, messageId)
+        }
+    val deliveredPendingIntent = PendingIntent.getBroadcast(
+        context,
+        System.currentTimeMillis().toInt(),
+        deliveredIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+    val sentPIList = ArrayList<PendingIntent>()
+    val deliveredPIList = ArrayList<PendingIntent>()
+
+
+    val msgListParts = smsManager.divideMessage(message)
+    var count = 0
+
+    repeat(msgListParts.size) {
+        sentPIList.add(count, sentPendingIntent)
+        deliveredPIList.add(count, deliveredPendingIntent)
+        count++
+    }
+    MESSAGE_SPLIT_COUNT = count
+
+    smsManager.sendMultipartTextMessage(
+        DEFAULT_MOBILE_NO,
+        null,
+        msgListParts,
+        sentPIList,
+        deliveredPIList
+    )
+}
+
 fun sendSMS(
     context: Context
 ) {
-    var handler: Handler?
-    val handlerThread = HandlerThread(AppConstant.Handler.SENT_HANDLER)
-    handlerThread.also {
-        it.start()
-        handler = Handler(it.looper)
-    }
-    handler?.post {
-        val smsManager = SmsManager.getDefault() as SmsManager
+    val mJob = Job()
+    CoroutineScope(Dispatchers.Default + mJob).launch {
         Log.v(
             "SmsManager_",
             ">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}"
         )
 
-        val DEFAULT_MOBILE_NO =
-            context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
 
         val repository = getFromDatabase(context)
         val allMessages = repository.allMessages
         var index = 0
         var mSentCount = 0
 
+        val sentMessages = repository.getSentMessages
+
         try {
 
-            allMessages.iterator().forEach { msg ->
-                if (!msg.sent && mSentCount < 1) {
-
-                    val sentIntent = Intent(context, SentReceiver::class.java).apply {
-                        putExtra(AppConstant.MESSAGE_ID, msg.id)
-                        putExtra(
-                            AppConstant.Reminder.TIME_STAMP,
-                            System.currentTimeMillis()
-                        )
-                        putExtra(AppConstant.Reminder.REMINDER_ID, 6)
-                        putExtra(AppConstant.Reminder.TITLE, "Message Sent Successfully...")
-                    }
-                    sentIntent.action = AppConstant.MESSAGE_SENT
-
-                    val sentPendingIntent = PendingIntent.getBroadcast(
-                        context, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                    )
-
-                    val deliveredIntent =
-                        Intent(context, DeliverReceiver::class.java).apply {
-                            putExtra(AppConstant.MESSAGE_ID, msg.id)
-                        }
-                    val deliveredPendingIntent = PendingIntent.getBroadcast(
-                        context, 0, deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT
-                    )
-
-                    val sentPIList = ArrayList<PendingIntent>()
-                    val deliveredPIList = ArrayList<PendingIntent>()
-
-
-                    val msgListParts = smsManager.divideMessage(msg.message)
-                    var count = 0
-
-                    repeat(msgListParts.size) {
-                        sentPIList.add(count, sentPendingIntent)
-                        deliveredPIList.add(count, deliveredPendingIntent)
-                        count++
-                    }
-                    MESSAGE_SPLIT_COUNT = count
-
-                    smsManager.sendMultipartTextMessage(
-                        DEFAULT_MOBILE_NO,
-                        null,
-                        msgListParts,
-                        sentPIList,
-                        deliveredPIList
-                    )
-
-                    mSentCount++
-                    if (mSentCount == 1)
-                        return@forEach
+            if (allMessages.size == sentMessages.size) {
+                allMessages.iterator().withIndex().forEach { msg ->
+                    resetSentMessages(context)
+                    sendSMS(context)
                 }
-                index++
+            } else {
+                allMessages.iterator().forEach { msg ->
+                    if (!msg.sent && mSentCount < 1) {
+                        requestSendSMS(context = context, messageId = msg.id, message = msg.message)
+
+                        mSentCount++
+                        if (mSentCount == 1)
+                            return@forEach
+                    }
+                    index++
+                }
             }
 
         } catch (e: Exception) {
@@ -453,45 +477,35 @@ fun sendSMS(
                 404,
                 "SMS send error!",
                 "Error -> $e",
-                HomeActivity::class.java
+                HomeActivity::class.java,
+                "ErrorChannel",
+                "Error Channel"
             )
             Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
         }
     }
 }
 
-fun updateDeliverStatus(context: Context, msgId: Int) {
-    Log.v("MSG_DELIVERED", ">>> Msg delivered Running AsyncTask onStarted()...")
+fun resetSentMessages(context: Context) {
+    val mJob = Job()
+    Log.v("REST_SENT_MESSAGES", ">>> REST_SENT_MESSAGES Running CoroutineScope ...")
 
-    BaseAsyncTask(object : BaseAsyncTask.SendSMSFromDb {
+    CoroutineScope(Dispatchers.Default + mJob).launch {
 
-        override fun onStarted() {
+        val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
+        val repository = MessageDbRepository(msgDao)
 
-            Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $msgId")
-//            val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
-            val repository = getFromDatabase(context)
-//            val repository = MessageDbRepository(msgDao, id = msgId)
+        val allMessages = repository.allMessages
 
-            val message = repository.messageById
-            Log.v("Updated_MSG", ">>> Msg: $message")
-            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
-
-            if (msgId != -1)
-                message.sent = true
-            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
+        allMessages.iterator().forEach { message ->
+            message.sent = false
             repository.updateMessage(message)
-
             Log.v(
-                "MSG_DELIVERY_STATUS",
-                ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
+                "REST_SENT_MESSAGES",
+                ">>> -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
             )
         }
-
-
-        override fun onCompleted() {
-        }
-    }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-
+    }
 }
 
 fun Calendar.formatTime(): String? {

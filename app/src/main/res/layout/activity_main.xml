@@ -41,4 +41,14 @@
     <!--            app:layout_constraintBottom_toBottomOf="parent"-->
     <!--            app:menu="@menu/bottom_navigation_menu" />-->
 
+    <Button
+            android:id="@+id/btnSendSms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SEND"
+            android:layout_margin="@dimen/margin_20"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
