@@ -34,6 +34,10 @@ import com.infomantri.autosms.send.viewmodel.AddAlarmViewModel
 import com.infomantri.autosms.send.viewmodel.PhoneCallViewModel
 import kotlinx.android.synthetic.main.activity_add_alarms.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.util.*
 
 class AddAlarmsActivity : BaseActivity() {
@@ -58,7 +62,6 @@ class AddAlarmsActivity : BaseActivity() {
         PhoneCallRecycler()
         setOnClickListener()
         checkForCallPermission()
-        tvDozeAlarm.text = getLongFromPreference(AppConstant.DOZE_ALARM)?.formatTime() ?: "NULL"
     }
 
     private fun setToolbar() {
@@ -70,16 +73,16 @@ class AddAlarmsActivity : BaseActivity() {
         )
     }
 
-    private fun setRecyclerView() {
-        val adapter = AddAlarmsListAdapter(repeatAlarm = { repeatAlarm, timeStamp, id ->
-            //            repeatAlarm.toggleAlarm(timeStamp, id)
-        }, deleteAlarm = { alarmId ->
-            if (alarmId != -1)
-                deleteAlarmById(alarmId)
-            else
-                showBlendToast("Error while deleting", Toast.LENGTH_LONG)
-        })
+    val adapter = AddAlarmsListAdapter(repeatAlarm = { repeatAlarm, timeStamp, id ->
+        //            repeatAlarm.toggleAlarm(timeStamp, id)
+    }, deleteAlarm = { alarmId ->
+        if (alarmId != -1)
+            deleteAlarmById(alarmId)
+        else
+            showBlendToast("Error while deleting", Toast.LENGTH_LONG)
+    })
 
+    private fun setRecyclerView() {
         add_alarm_recyclerview.isNestedScrollingEnabled = false
         add_alarm_recyclerview.adapter = adapter
         add_alarm_recyclerview.addItemDecoration(
@@ -88,7 +91,6 @@ class AddAlarmsActivity : BaseActivity() {
                 DividerItemDecoration.VERTICAL
             )
         )
-
 //        add_alarm_recyclerview.scrollToPosition(0)
         val linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.reverseLayout = true
@@ -107,35 +109,22 @@ class AddAlarmsActivity : BaseActivity() {
         itemTouchHelper.attachToRecyclerView(add_alarm_recyclerview)
 
         mAlarmView.allAlarms.observe(this, androidx.lifecycle.Observer { alarmList ->
-            var handler: Handler?
-            val handlerThread = HandlerThread(AppConstant.Handler.ADD_ALARM)
-            handlerThread.also {
-                it.start()
-                handler = Handler(it.looper)
-            }
-            handler?.post {
-                adapter.submitList(alarmList)
-            }
+            adapter.submitList(alarmList)
         })
     }
 
-    private fun PhoneCallRecycler() {
-        val phoneCallAdapter = PhoneCallListAdapter(repeatAlarm = { repeatAlarm, timeStamp, id -> },
-            deleteAlarm = { alarmId ->
-                if (alarmId != -1) {
-                    var handler: Handler?
-                    val handlerThread = HandlerThread(AppConstant.Handler.DELETE_ALARM)
-                    handlerThread.also {
-                        it.start()
-                        handler = Handler(it.looper)
-                    }
-                    handler?.post {
-                        deletePhoneCallAlarm(alarmId)
-                    }
-                } else
-                    showBlendToast("Error while deleting", Toast.LENGTH_LONG)
-            })
+    val phoneCallAdapter = PhoneCallListAdapter(repeatAlarm = { repeatAlarm, timeStamp, id -> },
+        deleteAlarm = { alarmId ->
+            if (alarmId != -1) {
+                val mJob = Job()
+                CoroutineScope(Dispatchers.Default + mJob).launch {
+                    deletePhoneCallAlarm(alarmId)
+                }
+            } else
+                showBlendToast("Error while deleting", Toast.LENGTH_LONG)
+        })
 
+    private fun PhoneCallRecycler() {
         rvPhoneCallAlarm.isNestedScrollingEnabled = false
         rvPhoneCallAlarm.adapter = phoneCallAdapter
         rvPhoneCallAlarm.addItemDecoration(
@@ -163,16 +152,9 @@ class AddAlarmsActivity : BaseActivity() {
 
         mPhoneCallViewModel.allPhoneCallAlarms.observe(
             this,
-            androidx.lifecycle.Observer { alarmList ->
-                var handler: Handler?
-                val handlerThread = HandlerThread(AppConstant.Handler.PHONE_CALL)
-                handlerThread.also {
-                    it.start()
-                    handler = Handler(it.looper)
-                }
-                handler?.post {
-                    phoneCallAdapter.submitList(alarmList)
-                }
+            androidx.lifecycle.Observer
+            { alarmList ->
+                phoneCallAdapter.submitList(alarmList)
             })
     }
 
@@ -201,16 +183,6 @@ class AddAlarmsActivity : BaseActivity() {
         fabAddMsgAlarm.setOnClickListener {
             showTimePicker(true)
         }
-
-        tvDozeAlarm.setOnClickListener {
-            Calendar.getInstance().apply {
-                val timeFragment =
-                    TimerFragment.instance(get(Calendar.HOUR_OF_DAY), get(Calendar.MINUTE))
-                timeFragment.setTimeChangeListener(mOnDozeChangeListener)
-                timeFragment.show(supportFragmentManager, "time")
-            }
-        }
-
     }
 
     private fun setDozeModeAlarm(
@@ -256,13 +228,10 @@ class AddAlarmsActivity : BaseActivity() {
                 pendingIntent
             )
         }
-        addLongToPreference(AppConstant.DOZE_ALARM, calendar.timeInMillis)
-        tvDozeAlarm.text = calendar.formatTime()
         Log.v(
             "SET_ALARM",
             ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
         )
-
     }
 
     private fun showTimePicker(isAddMsgAlarm: Boolean) {
@@ -290,6 +259,7 @@ class AddAlarmsActivity : BaseActivity() {
                 set(Calendar.SECOND, 0)
             }
             mAlarmView.insert(AddAlarm(addAlarmCalendar.timeInMillis))
+            adapter.notifyDataSetChanged()
             setAlarm(
                 calendar = addAlarmCalendar,
                 requestCode = ((addAlarmCalendar.timeInMillis).toInt() * 1000),
@@ -317,35 +287,12 @@ class AddAlarmsActivity : BaseActivity() {
                 set(Calendar.SECOND, 0)
             }
             mPhoneCallViewModel.insertPhoneCallAlarm(PhoneCallAlarm(addAlarmCalendar.timeInMillis))
+            phoneCallAdapter.notifyDataSetChanged()
             setAlarm(
                 calendar = addAlarmCalendar,
                 requestCode = ((addAlarmCalendar.timeInMillis).toInt() * 1000),
                 title = getAlarmTitle(addAlarmCalendar.timeInMillis),
                 isAddMsgAlarm = false
-            )
-//            setRepeatingAlarm(
-//                addAlarmCalendar,
-//                ((addAlarmCalendar.timeInMillis).toInt() % 10 * 1000),
-//                getAlarmTitle(addAlarmCalendar.timeInMillis)
-//            )
-//            showBlendToast("Alarm added at ${addAlarmCalendar.formatDateToTime()}")
-            Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
-        }
-    }
-
-    private val mOnDozeChangeListener = object : TimerFragment.OnTimeSelected {
-        override fun selectedTime(hour: Int, minute: Int, unit: String) {
-            val addAlarmCalendar = Calendar.getInstance()
-
-            addAlarmCalendar.apply {
-                set(Calendar.HOUR_OF_DAY, if (unit == "PM") hour + 12 else hour)
-                set(Calendar.MINUTE, minute)
-                set(Calendar.SECOND, 0)
-            }
-            setDozeModeAlarm(
-                addAlarmCalendar,
-                addAlarmCalendar.timeInMillis.toInt() * 1000,
-                getAlarmTitle(addAlarmCalendar.timeInMillis)
             )
 //            setRepeatingAlarm(
 //                addAlarmCalendar,

@@ -98,12 +98,12 @@ fun AppCompatActivity.showBlendToast(msg: String, length: Int = Toast.LENGTH_SHO
     toast.view.apply {
         background.colorFilter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             BlendModeColorFilter(
-                ContextCompat.getColor(this@showBlendToast, R.color.colorBlendToast),
+                ContextCompat.getColor(this@showBlendToast, R.color.redColorBlendToast),
                 BlendMode.SRC_IN
             )
         } else {
             PorterDuffColorFilter(
-                ContextCompat.getColor(this@showBlendToast, R.color.colorBlendToast),
+                ContextCompat.getColor(this@showBlendToast, R.color.redColorBlendToast),
                 PorterDuff.Mode.SRC_IN
             )
         }
@@ -342,7 +342,7 @@ fun sendNotification(
     val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
     val notificationBuilder =
-        NotificationCompat.Builder(context, "AlarmReminderChannel")
+        NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_sms_launcher_icon_108x108)
 //                .setLargeIcon(
 //                    BitmapFactory.decodeResource(
@@ -367,7 +367,8 @@ fun sendNotification(
         ).apply {
             description = "Text"
         }
-        notificationManager?.createNotificationChannel(channel)
+        // As we are already created Notification Channel in our Application class onCreate method, so writing 2 times will not create notifications, so write only once.
+//        notificationManager?.createNotificationChannel(channel)
     }
 
     notificationManager?.notify(id, notificationBuilder.build())
@@ -446,18 +447,14 @@ fun sendSMS(
     val mJob = Job()
     CoroutineScope(Dispatchers.Default + mJob).launch {
         Log.v(
-            "SmsManager_",
+            "SmsManager",
             ">>> SmsManger.getDefaultSmsSubscriptionId(): ${SmsManager.getDefaultSmsSubscriptionId()}"
         )
 
-
         val repository = getFromDatabase(context)
         val allMessages = repository.allMessages
-        var index = 0
-        var mSentCount = 0
-
         val sentMessages = repository.getSentMessages
-
+        var index = -1
         try {
 
             if (allMessages.size == sentMessages.size) {
@@ -466,24 +463,26 @@ fun sendSMS(
                     sendSMS(context)
                 }
             } else {
-                allMessages.iterator().forEach { msg ->
-                    if (!msg.sent && mSentCount < 1) {
-                        requestSendSMS(context = context, messageId = msg.id, message = msg.message)
-
-                        mSentCount++
-                        if (mSentCount == 1)
-                            return@forEach
+                allMessages.iterator().withIndex().forEach { msg ->
+                    if (!msg.value.sent) {
+                        index = msg.index
+                        requestSendSMS(
+                            context = context,
+                            messageId = msg.value.id,
+                            message = msg.value.message
+                        )
+                        return@forEach
                     }
-                    index++
                 }
             }
 
         } catch (e: Exception) {
-            allMessages[index].apply {
-            }
+            repository.updateMessage(allMessages[index].apply {
+                isFailed = true
+            })
             sendNotification(
                 context,
-                404,
+                System.currentTimeMillis().toInt(),
                 "SMS send error!",
                 "Error -> $e",
                 HomeActivity::class.java,
@@ -512,6 +511,35 @@ fun resetSentMessages(context: Context) {
             Log.v(
                 "REST_SENT_MESSAGES",
                 ">>> -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
+            )
+        }
+    }
+}
+
+fun updateDeliverStatus(context: Context, msgId: Int) {
+    Log.v("MSG_DELIVERED", ">>> Msg delivered Running AsyncTask onStarted()...")
+
+    val mJob = Job()
+    CoroutineScope(Dispatchers.Default + mJob).launch {
+
+        Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $msgId")
+        val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
+        val repository = MessageDbRepository(msgDao, id = msgId)
+
+        val message = repository.messageById
+        Log.v("Updated_MSG", ">>> Msg: $message")
+
+        message?.let {
+            if (msgId != -1) {
+                message.sent = true
+                message.timeStamp = System.currentTimeMillis()
+            }
+            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
+            repository.updateMessage(message)
+
+            Log.v(
+                "MSG_DELIVERY_STATUS",
+                ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
             )
         }
     }

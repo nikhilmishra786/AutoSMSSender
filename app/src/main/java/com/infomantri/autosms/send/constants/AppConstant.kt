@@ -27,7 +27,7 @@ object AppConstant {
             const val MESSAGE_CONFIRMATION_CHANNEL_ID = "MessageConfirmationChannelId"
             const val MESSAGE_CONFIRMATION_CHANNEL = "MessageConfirmationChannel"
             const val PHONE_CALL_CHANNEL_ID = "PhoneCallChannelId"
-            const val PHONE_CALL_CHANNEL = "PhoneCallChannel"
+            const val PHONE_CALL_CHANNEL = "Phone Call Channel"
         }
     }
 
@@ -62,4 +62,24 @@ object AppConstant {
 
     const val DEBUG_MOBILE_NO = "9867169318"
 
+    object Color {
+        val colorAsset = arrayOf(
+            "#FFFFEBEE",
+            "#FFFCE4EC",
+            "#FFF3E5F5",
+            "#FFF3E5F5",
+            "#FFEDE7F6",
+            "#FFE3F2FD",
+            "#FFE1F5FE",
+            "#FFE0F7FA",
+            "#FFE0F2F1",
+            "#FFE8F5E9",
+            "#FFF1F8E9",
+            "#FFF9FBE7",
+            "#FFFFFDE7",
+            "#FFFFF8E1",
+            "#FFFFF3E0",
+            "#FFFBE9E7"
+        )
+    }
 }

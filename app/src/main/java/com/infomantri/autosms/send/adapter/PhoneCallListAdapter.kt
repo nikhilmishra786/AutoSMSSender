@@ -1,6 +1,7 @@
 package com.infomantri.autosms.send.adapter
 
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,10 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.infomantri.autosms.send.R
+import com.infomantri.autosms.send.constants.AppConstant.Color.colorAsset
 import com.infomantri.autosms.send.database.AddAlarm
 import com.infomantri.autosms.send.database.PhoneCallAlarm
 import java.text.SimpleDateFormat
@@ -22,6 +25,25 @@ class PhoneCallListAdapter(repeatAlarm: (Boolean, Long, Int) -> Unit, deleteAlar
 
     val mRepeatAlarm = repeatAlarm
     val mDeleteAlarm = deleteAlarm
+//    val colorAsset = arrayOf(
+//        R.color.dozeModeColor0,
+//        R.color.dozeModeColor1,
+//        R.color.dozeModeColor2,
+//        R.color.dozeModeColor3,
+//        R.color.dozeModeColor4,
+//        R.color.dozeModeColor5,
+//        R.color.dozeModeColor6,
+//        R.color.dozeModeColor7,
+//        R.color.dozeModeColor8,
+//        R.color.dozeModeColor9,
+//        R.color.dozeModeColor10,
+//        R.color.dozeModeColor11,
+//        R.color.dozeModeColor12,
+//        R.color.dozeModeColor13,
+//        R.color.dozeModeColor14,
+//        R.color.dozeModeColor15,
+//        R.color.dozeModeColor16
+//    )
 
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<PhoneCallAlarm>() {
@@ -64,6 +86,7 @@ class PhoneCallListAdapter(repeatAlarm: (Boolean, Long, Int) -> Unit, deleteAlar
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = current.alarmTimeStamp
 
+        holder.itemView.setBackgroundColor(Color.parseColor(colorAsset[(colorAsset.indices).random()]))
         holder.alarmItemView.text = current.alarmTimeStamp.formatDate()
         holder.alarmSwithItemView.isSelected = current.repeatAlarm
         holder.alarmStatus.text = DateUtils.getRelativeTimeSpanString(calendar.timeInMillis)
@@ -74,6 +97,9 @@ class PhoneCallListAdapter(repeatAlarm: (Boolean, Long, Int) -> Unit, deleteAlar
             holder.alarmStatus.setTextColor(Color.parseColor("#43A047"))
         }
 
+        when (calendar.get(Calendar.HOUR_OF_DAY)) {
+            in 0..7 -> holder.itemView.setBackgroundResource(R.drawable.ic_border_bg)
+        }
         holder.alarmSwithItemView.setOnCheckedChangeListener { buttonView, isChecked ->
             mRepeatAlarm(isChecked, current.alarmTimeStamp, current.id)
         }

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.database.AddAlarm
 import com.infomantri.autosms.send.R.layout.recyclerview_add_alarm_item
+import com.infomantri.autosms.send.constants.AppConstant.Color.colorAsset
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -59,6 +60,7 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean, Long, Int) -> Unit, deleteAlar
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = current.alarmTimeStamp
 
+        holder.itemView.setBackgroundColor(Color.parseColor(colorAsset[(colorAsset.indices).random()]))
         holder.alarmItemView.text = current.alarmTimeStamp.formatDate()
         holder.alarmSwithItemView.isSelected = current.repeatAlarm
         holder.alarmStatus.text = DateUtils.getRelativeTimeSpanString(calendar.timeInMillis)
@@ -69,6 +71,9 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean, Long, Int) -> Unit, deleteAlar
             holder.alarmStatus.setTextColor(Color.parseColor("#43A047"))
         }
 
+        when (calendar.get(Calendar.HOUR_OF_DAY)) {
+            in 0..7 -> holder.itemView.setBackgroundResource(R.drawable.ic_border_bg)
+        }
         holder.alarmSwithItemView.setOnCheckedChangeListener { buttonView, isChecked ->
             mRepeatAlarm(isChecked, current.alarmTimeStamp, current.id)
         }

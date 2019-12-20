@@ -22,6 +22,10 @@ import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.util.formatTime
 import com.infomantri.autosms.send.util.sendNotification
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.util.*
 
 class DeliverReceiver : BroadcastReceiver() {
@@ -83,15 +87,10 @@ class DeliverReceiver : BroadcastReceiver() {
     }
 
     fun updateDeliverStatus(context: Context, msgId: Int) {
-        var handler: Handler?
         Log.v("MSG_DELIVERED", ">>> Msg delivered Running AsyncTask onStarted()...")
 
-        val handlerThread = HandlerThread(AppConstant.Handler.UPDATE_HANDLER)
-        handlerThread.also {
-            it.start()
-            handler = Handler(it.looper)
-        }
-        handler?.postDelayed({
+        val mJob = Job()
+        CoroutineScope(Dispatchers.Default + mJob).launch {
 
             Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $msgId")
             val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
@@ -101,8 +100,10 @@ class DeliverReceiver : BroadcastReceiver() {
             Log.v("Updated_MSG", ">>> Msg: $message")
 
             message?.let {
-                if (msgId != -1)
+                if (msgId != -1) {
                     message.sent = true
+                    message.timeStamp = System.currentTimeMillis()
+                }
                 Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
                 repository.updateMessage(message)
 
@@ -111,7 +112,7 @@ class DeliverReceiver : BroadcastReceiver() {
                     ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
                 )
             }
-        }, 500)
+        }
     }
 
 }
