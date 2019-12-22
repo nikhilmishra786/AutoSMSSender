@@ -192,7 +192,7 @@ class SettingsActivity : BaseActivity() {
         }
         setAlarm(
             calendar = addAlarmCalendar,
-            requestCode = ((addAlarmCalendar.timeInMillis).toInt() * 1000),
+            requestCode = ((addAlarmCalendar.timeInMillis).toInt()),
             title = "Confirmation Message..." + getAlarmTitle(addAlarmCalendar.timeInMillis)
         )
     }
