@@ -58,6 +58,16 @@ open class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
     }
 
+    fun startActivityFromLeft(activity: Class<*>, bundle: Bundle? = null) {
+        val intent = Intent(this, activity)
+        if (bundle != null) {
+            intent.putExtras(bundle)
+        }
+
+        startActivity(intent)
+        overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left)
+    }
+
     fun getSharedPreference(context: Context): SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -99,7 +109,7 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     fun String.showSnackbar(restoreData: () -> Unit) {
-        val mSnackBar : Snackbar = Snackbar.make(toolbar, this, Snackbar.LENGTH_LONG)
+        val mSnackBar: Snackbar = Snackbar.make(toolbar, this, Snackbar.LENGTH_LONG)
         mSnackBar.setAction("Undo", object : View.OnClickListener {
             override fun onClick(p0: View?) {
                 mSnackBar.dismiss()
@@ -107,7 +117,7 @@ open class BaseActivity : AppCompatActivity() {
             }
         })
         mSnackBar.show()
-        mSnackBar.setActionTextColor(ContextCompat.getColor(applicationContext,R.color.orange))
+        mSnackBar.setActionTextColor(ContextCompat.getColor(applicationContext, R.color.orange))
     }
 
     fun showAlertDialog(deleteMsg: (Boolean) -> Unit) {
@@ -139,70 +149,10 @@ open class BaseActivity : AppCompatActivity() {
         alertDialog.show()
     }
 
-    fun getCallsDetails(): ArrayList<CallDetails> {
+    override fun onBackPressed() {
+        super.onBackPressed()
 
-        val callDetails = ArrayList<CallDetails>()
-        val contentUri = CallLog.Calls.CONTENT_URI
-
-        try {
-            val cursor = contentResolver.query(contentUri, null, null, null, null)
-            cursor?.let {
-                val nameUri = cursor.getColumnIndex(CallLog.Calls.CACHED_LOOKUP_URI)
-                val number = cursor.getColumnIndex(CallLog.Calls.NUMBER)
-                val duration = cursor.getColumnIndex(CallLog.Calls.DURATION)
-                val date = cursor.getColumnIndex(CallLog.Calls.DATE)
-                val type = cursor.getColumnIndex(CallLog.Calls.TYPE)
-
-                if (cursor.moveToFirst()) {
-                    do {
-                        val callType = when (cursor.getInt(type)) {
-                            CallLog.Calls.INCOMING_TYPE -> "INCOMING"
-                            CallLog.Calls.OUTGOING_TYPE -> "OUTGOING"
-                            CallLog.Calls.MISSED_TYPE -> "MISSED"
-                            CallLog.Calls.REJECTED_TYPE -> "REJECTED"
-                            else -> "NOT_DEFINED"
-                        }
-                        val phoneNumber = cursor.getString(number)
-                        val callerNameUri = cursor.getString(nameUri)
-                        val callDate = cursor.getString(date)
-                        val callDayTime = Date(callDate.toLong()).toString()
-                        val callDuration = cursor.getString(duration)
-                        callDetails.add(
-                            CallDetails(
-                                getCallerName(callerNameUri),
-                                phoneNumber,
-                                callDuration,
-                                callType,
-                                callDayTime
-                            )
-                        )
-                    } while (cursor.moveToNext())
-                }
-                cursor.close()
-            }
-        } catch (e: SecurityException) {
-            Toast.makeText(this, "User denied permission", Toast.LENGTH_SHORT).show()
-        }
-        return callDetails
-    }
-
-    fun getCallerName(callerNameUri: String?): String {
-        return if (callerNameUri != null) {
-
-            val cursor = contentResolver.query(Uri.parse(callerNameUri), null, null, null, null)
-
-            var name = ""
-            if ((cursor?.count ?: 0 > 0)) {
-                while (cursor != null && cursor.moveToNext()) {
-                    name =
-                        cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
-                }
-            }
-            cursor?.close()
-            return name
-        } else {
-            "Not a contact!"
-        }
+        overridePendingTransition(R.anim.enter_from_left, R.anim.exit_to_right)
     }
 
 }

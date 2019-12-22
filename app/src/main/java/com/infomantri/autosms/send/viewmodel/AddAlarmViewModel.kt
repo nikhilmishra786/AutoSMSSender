@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.infomantri.autosms.send.database.*
+import com.infomantri.autosms.send.database.PhoneCall.PhoneCallAlarm
+import com.infomantri.autosms.send.database.PhoneCall.PhoneCallRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -22,7 +24,10 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
         allAlarms = addAlarmLiveDataRepository.allAlarms
 
         val phoneCallDao = MessageRoomDatabase.getDatabase(application).phoneCallAlarmDao()
-        phoneCallRepository = PhoneCallRepository(phoneCallDao)
+        phoneCallRepository =
+            PhoneCallRepository(
+                phoneCallDao
+            )
         allPhoneCallAlarms = phoneCallRepository.allPhoneCallAlarms
     }
 

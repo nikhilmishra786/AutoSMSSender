@@ -10,6 +10,7 @@ import android.os.Vibrator
 import android.util.Log
 import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.util.formatTime
 import com.infomantri.autosms.send.util.getStringFromPreference
 import com.infomantri.autosms.send.util.phoneCallToNumber
 import com.infomantri.autosms.send.util.sendNotification
@@ -18,6 +19,7 @@ class DozeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.v("DOZE_ALARM_onReceive", ">>> Doze Alarm onReceive() ... Action: ${intent?.action}")
         context?.let {
+            val timeStamp = intent?.extras?.getLong(AppConstant.Reminder.TIME_STAMP) ?: -1
             playRingtone(context)
             vibratePhone(context)
 
@@ -25,8 +27,8 @@ class DozeReceiver : BroadcastReceiver() {
                 sendNotification(
                     context,
                     System.currentTimeMillis().toInt(),
-                    "Doze Mode Alarm",
-                    "Doze Alarm triggered for System Wakeup... ",
+                    "Doze Mode Alarm Fired",
+                    "Fired for System Wakeup... ${timeStamp.formatTime()}",
                     AddAlarmsActivity::class.java,
                     channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
                     channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL

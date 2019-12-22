@@ -1,6 +1,7 @@
 package com.infomantri.autosms.send.util
 
 import android.Manifest
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -11,46 +12,44 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Build
-import android.os.Handler
-import android.os.HandlerThread
 import android.telephony.SmsManager
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextPaint
-import android.text.style.ForegroundColorSpan
-import android.widget.TextView
-import android.widget.Toast
-import androidx.annotation.ColorRes
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
-import android.util.Patterns
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
+import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.util.Patterns
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
-import androidx.core.app.ActivityCompat
+import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.ColorRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
+import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.infomantri.autosms.send.R
+import com.infomantri.autosms.send.activity.AppSignatureHelper
 import com.infomantri.autosms.send.activity.HomeActivity
-import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.base.BaseActivity.Companion.MESSAGE_SPLIT_COUNT
 import com.infomantri.autosms.send.constants.AppConstant
-import com.infomantri.autosms.send.constants.AppConstant.DEFAULT_MOBILE_NO
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
+import com.infomantri.autosms.send.receiver.AlarmReceiver
 import com.infomantri.autosms.send.receiver.DeliverReceiver
+import com.infomantri.autosms.send.receiver.DozeReceiver
 import com.infomantri.autosms.send.receiver.SentReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -152,21 +151,6 @@ Minimum eight and maximum 10 characters, at least one uppercase letter, one lowe
  *
  *
  */
-fun EditText.isValidPassword(): Boolean {
-
-    val containsLowerChar = getTrimmedText().matches(Regex(".*[a-z].*"))
-    val containsUpperChar = getTrimmedText().matches(Regex(".*[A-Z].*"))
-    val containsDigit = getTrimmedText().matches(Regex(".*[0-9].*"))
-    val containSpecialChar = getTrimmedText().matches(Regex(".*[@${'$'}!%*?&#].*"))
-
-    return getTrimmedText().length >= 8 &&
-            ((containsLowerChar && containSpecialChar && containsDigit) ||
-                    (containsLowerChar && containSpecialChar && containsUpperChar) ||
-                    (containsLowerChar && containsDigit && containsUpperChar))
-
-
-//    return getTrimmedText().matches(Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@${'$'}!%*?&])[A-Za-z\\d@${'$'}!%*?&]{8,}$".trimIndent()))
-}
 
 fun EditText.isNotEmpty() = getTrimmedText().isNotEmpty()
 
@@ -219,6 +203,11 @@ fun Context.setBooleanFromPreference(key: String, value: Boolean) {
 
 fun Context.getBooleanFromPreference(key: String): Boolean? {
     return PreferenceManager.getDefaultSharedPreferences(this).getBoolean(key, false)
+}
+
+fun Context.clearBooleanFromPreference(key: String, value: Boolean) {
+    PreferenceManager.getDefaultSharedPreferences(this).edit()
+        .putBoolean(key, value).clear().apply()
 }
 
 fun Context.clearPreference() {
@@ -320,6 +309,29 @@ fun TextView.multiColorTextView(
     )
 
     this.text = word
+}
+
+fun Context.startSmsRetriever() {
+    val appSignatureHelper = AppSignatureHelper(this)
+
+    val client = SmsRetriever.getClient(this)
+
+    val task = client.startSmsRetriever()
+
+    task.addOnSuccessListener { _ -> Log.d("CodeActivity", "Sms listener started!") }
+    task.addOnFailureListener { e ->
+        Log.e("CodeActivity", "Failed to start sms retriever: ${e.message}")
+    }
+}
+
+fun Context.cancelAlarm(requestCode: Int) {
+
+    val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val intent = Intent(this, AlarmReceiver::class.java)
+    val pendingIntent =
+        PendingIntent.getBroadcast(this, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    alarmManager.cancel(pendingIntent)
+    Log.v("NEXT_ALARM", ">>> Next Alarm : ${alarmManager.nextAlarmClock}")
 }
 
 fun sendNotification(
@@ -454,7 +466,7 @@ fun sendSMS(
         val repository = getFromDatabase(context)
         val allMessages = repository.allMessages
         val sentMessages = repository.getSentMessages
-        var index = -1
+        var index = 0
         try {
 
             if (allMessages.size == sentMessages.size) {
@@ -464,14 +476,14 @@ fun sendSMS(
                 }
             } else {
                 allMessages.iterator().withIndex().forEach { msg ->
-                    if (!msg.value.sent) {
-                        index = msg.index
+                    if (!msg.value.sent && index < 1) {
                         requestSendSMS(
                             context = context,
                             messageId = msg.value.id,
                             message = msg.value.message
                         )
-                        return@forEach
+                        index++
+                        return@launch
                     }
                 }
             }
@@ -486,7 +498,7 @@ fun sendSMS(
                 "SMS send error!",
                 "Error -> $e",
                 HomeActivity::class.java,
-                "ErrorChannel",
+                AppConstant.Notification.Channel.MESSAGE_CHANNEL_ID,
                 "Error Channel"
             )
             Log.v("SEND_SMS_Error!...", ">>> Error While Sending SMS... $e")
@@ -516,8 +528,8 @@ fun resetSentMessages(context: Context) {
     }
 }
 
-fun updateDeliverStatus(context: Context, msgId: Int) {
-    Log.v("MSG_DELIVERED", ">>> Msg delivered Running AsyncTask onStarted()...")
+fun updateStatusToPending(context: Context, msgId: Int) {
+    Log.v("MSG_DELIVERED", ">>> Msg updateStatusToPending Running AsyncTask onStarted()...")
 
     val mJob = Job()
     CoroutineScope(Dispatchers.Default + mJob).launch {
@@ -531,10 +543,11 @@ fun updateDeliverStatus(context: Context, msgId: Int) {
 
         message?.let {
             if (msgId != -1) {
-                message.sent = true
+                message.sent = false
                 message.timeStamp = System.currentTimeMillis()
+                message.isFailed = false
             }
-            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
+            Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = false : sent: ${message.sent}")
             repository.updateMessage(message)
 
             Log.v(
@@ -542,6 +555,121 @@ fun updateDeliverStatus(context: Context, msgId: Int) {
                 ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
             )
         }
+    }
+}
+
+fun Context.setAlarm(
+    calendar: Calendar,
+    requestCode: Int, title: String, isAddMsgAlarm: Boolean
+) {
+    Log.v(
+        "SET_ALARM_TIME_STAMP",
+        ">>> SET_ALARM_TIME_STAMP : $requestCode"
+    )
+    val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
+        putExtra(AppConstant.Reminder.TIME_STAMP, calendar.timeInMillis)
+        putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
+        putExtra(AppConstant.Reminder.TITLE, title)
+        if (isAddMsgAlarm) {
+            action = AppConstant.Intent.ACTION_MESSAGE_ALARM
+            putExtra(AppConstant.Intent.PHONE_CALL_ALARM, false)
+        } else {
+            action = AppConstant.Intent.ACTION_PHONE_CALL_ALARM
+            putExtra(AppConstant.Intent.PHONE_CALL_ALARM, true)
+        }
+    }
+
+    val pendingIntent = PendingIntent.getBroadcast(
+        this,
+        requestCode,
+        notifyIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
+    val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    if (Date().after(calendar.time)) {
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            24 * 60 * 60 * 1000,
+            pendingIntent
+        )
+    } else {
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            24 * 60 * 60 * 1000,
+            pendingIntent
+        )
+    }
+
+    when (calendar.get(Calendar.HOUR_OF_DAY)) {
+        in 0..6 -> setDozeModeAlarm(calendar, requestCode, title)
+    }
+
+    Log.v(
+        "SET_ALARM",
+        ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
+    )
+}
+
+fun Context.setDozeModeAlarm(
+    calendar: Calendar,
+    requestCode: Int, title: String
+) {
+    calendar.apply {
+        set(Calendar.SECOND, 0)
+    }
+
+    val notifyIntent = Intent(this, DozeReceiver::class.java).apply {
+        putExtra(AppConstant.Reminder.TIME_STAMP, calendar.timeInMillis)
+        putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
+        putExtra(AppConstant.Reminder.TITLE, title)
+        action = AppConstant.Intent.ACTION_DOZE_MODE_ALARM
+    }
+    notifyIntent.action = "action.doze.alarm"
+
+    val pendingIntent = PendingIntent.getBroadcast(
+        this,
+        requestCode,
+        notifyIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
+    val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    if (Date().after(calendar.time)) {
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+        )
+    } else {
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+        )
+    }
+    Log.v(
+        "SET_ALARM",
+        ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
+    )
+}
+
+fun getAlarmTitle(timeStamp: Long): String {
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = timeStamp
+
+    return when (calendar.get(Calendar.HOUR_OF_DAY)) {
+
+        in 0..3 -> "Mid Night"
+        in 4..11 -> "Good Morning"
+        in 12..15 -> "Good After Noon"
+        in 16..20 -> "Good Evening"
+        in 21..23 -> "Good Night"
+        else -> "Good Day"
     }
 }
 

@@ -4,7 +4,7 @@
 
     <stroke
             android:width="@dimen/margin_4"
-            android:color="#A5D6A7" />
+            android:color="#EF9A9A" />
 
-    <solid android:color="@color/material50Color10" />
+    <solid android:color="@color/material50Color1" />
 </shape>

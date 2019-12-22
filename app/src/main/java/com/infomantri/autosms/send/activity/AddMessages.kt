@@ -69,27 +69,19 @@ class AddMessages : BaseActivity() {
             if (msg.isEmpty().not()) {
                 mViewModel.insert(Message(msg, System.currentTimeMillis(), false))
             }
-            val intent = Intent(this, HomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            startActivityFromLeft(HomeActivity::class.java)
         }
 
         toolIvAddAlarm.setOnClickListener {
-            val intent = Intent(this, AddAlarmsActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            startActivityFromLeft(AddAlarmsActivity::class.java)
         }
 
         toolIvSettings.setOnClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            startActivityFromLeft(SettingsActivity::class.java)
         }
 
         toolIvHome.setOnClickListener {
-            val intent = Intent(this, HomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            startActivityFromLeft(HomeActivity::class.java)
         }
     }
 

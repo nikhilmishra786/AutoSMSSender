@@ -1,5 +1,6 @@
 package com.infomantri.autosms.send.receiver
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -13,11 +14,9 @@ import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.Status
 import com.infomantri.autosms.send.activity.AddAlarmsActivity
 import com.infomantri.autosms.send.constants.AppConstant
-import com.infomantri.autosms.send.util.getStringFromPreference
-import com.infomantri.autosms.send.util.phoneCallToNumber
-import com.infomantri.autosms.send.util.sendNotification
-import com.infomantri.autosms.send.util.sendSMS
+import com.infomantri.autosms.send.util.*
 import kotlinx.coroutines.*
+import java.util.*
 
 class SmsReceiver : BroadcastReceiver() {
 
@@ -72,7 +71,6 @@ class SmsReceiver : BroadcastReceiver() {
                                         channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
                                     )
 
-                                    extractTimeFromMsg(message) * 60 * 1000
                                     val sendMessage =
                                         "Your Alarm has been set at Time: ${extractTimeFromMsg(
                                             message
@@ -80,6 +78,11 @@ class SmsReceiver : BroadcastReceiver() {
                                             if (message.contains("min")) "minutes" else "hours"
                                         )
                                     sendSMS(context, sendMessage)
+                                    context.setRequestAlarm(
+                                        extractTimeFromMsg(message) * 60 * 1000,
+                                        System.currentTimeMillis().toInt(),
+                                        "Phone Call Alarm for Request Successfully Done"
+                                    )
                                 }
 
 
@@ -132,20 +135,14 @@ class SmsReceiver : BroadcastReceiver() {
     private fun sendSMS(
         context: Context, message: String
     ) {
-        var handler: Handler?
-        val handlerThread = HandlerThread(AppConstant.Handler.SENT_HANDLER)
-        handlerThread.also {
-            it.start()
-            handler = Handler(it.looper)
-        }
-        handler?.post {
+        val mJob = Job()
+        CoroutineScope(Dispatchers.Default + mJob).launch {
             val smsManager = SmsManager.getDefault() as SmsManager
 
             val DEFAULT_MOBILE_NO =
                 context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO)
 
             try {
-
 
                 val sentIntent = Intent(context, SentReceiver::class.java).apply {
                     putExtra(AppConstant.MESSAGE, message)
@@ -187,4 +184,38 @@ class SmsReceiver : BroadcastReceiver() {
             }
         }
     }
+
+    private fun Context.setRequestAlarm(
+        alarmTime: Long,
+        requestCode: Int, title: String
+    ) {
+        val calendar = Calendar.getInstance()
+
+        val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
+            putExtra(AppConstant.Reminder.TIME_STAMP, calendar.timeInMillis + alarmTime)
+            putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
+            putExtra(AppConstant.Reminder.TITLE, title)
+            action = AppConstant.Intent.ACTION_CONFIRMATION_SMS
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            requestCode,
+            notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis + alarmTime,
+            pendingIntent
+        )
+
+        Log.v(
+            "SET_ALARM",
+            ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
+        )
+    }
+
 }

@@ -16,6 +16,14 @@ object AppConstant {
     const val MESSAGE = "message"
 
     const val DOZE_ALARM = "doze_alarm"
+    const val CONFIRMATION_SMS_ALARM = "confirmation_sms_alarm"
+    const val IS_AUTO_STARTUP = "is_auto_startup"
+
+    object Status {
+        const val SENT = "Sent"
+        const val PENDING = "Pending"
+        const val FAILURE = "Failure"
+    }
 
     object Notification {
         const val PHONE_CALL = 99
@@ -51,6 +59,7 @@ object AppConstant {
         const val ACTION_PHONE_CALL_ALARM = "action.phone.call.alarm"
         const val ACTION_MESSAGE_ALARM = "action.message.alarm"
         const val ACTION_DOZE_MODE_ALARM = "action.doze.alarm"
+        const val ACTION_CONFIRMATION_SMS = "action.confirmation.sms"
 
         const val PHONE_CALL_ALARM = "phone_call_alarm"
         const val MESSAGE_ALARM = "message_alarm"
@@ -83,3 +92,25 @@ object AppConstant {
         )
     }
 }
+
+
+
+//    val colorAsset = arrayOf(
+//        R.color.dozeModeColor0,
+//        R.color.dozeModeColor1,
+//        R.color.dozeModeColor2,
+//        R.color.dozeModeColor3,
+//        R.color.dozeModeColor4,
+//        R.color.dozeModeColor5,
+//        R.color.dozeModeColor6,
+//        R.color.dozeModeColor7,
+//        R.color.dozeModeColor8,
+//        R.color.dozeModeColor9,
+//        R.color.dozeModeColor10,
+//        R.color.dozeModeColor11,
+//        R.color.dozeModeColor12,
+//        R.color.dozeModeColor13,
+//        R.color.dozeModeColor14,
+//        R.color.dozeModeColor15,
+//        R.color.dozeModeColor16
+//    )

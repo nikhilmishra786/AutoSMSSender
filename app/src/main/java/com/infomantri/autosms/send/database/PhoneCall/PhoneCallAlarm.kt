@@ -1,4 +1,4 @@
-package com.infomantri.autosms.send.database
+package com.infomantri.autosms.send.database.PhoneCall
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

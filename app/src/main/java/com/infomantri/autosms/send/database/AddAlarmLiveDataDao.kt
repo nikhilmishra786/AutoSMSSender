@@ -2,6 +2,7 @@ package com.infomantri.autosms.send.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.infomantri.autosms.send.database.PhoneCall.PhoneCallAlarm
 
 @Dao
 interface AddAlarmLiveDataDao {

@@ -1,20 +1,24 @@
 package com.infomantri.autosms.send.activity
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.lifecycle.Observer
 import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.receiver.ConfirmationSmsReceiver
 import com.infomantri.autosms.send.util.*
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
 import com.infomantri.autosms.send.viewmodel.SubscribersViewModel
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.activity_settings.view.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
+import java.util.*
 
 class SettingsActivity : BaseActivity() {
 
@@ -32,12 +36,23 @@ class SettingsActivity : BaseActivity() {
         mMessageViewModel = initViewModel()
         setOnClickListener()
 
-        mMessageViewModel.getSentMsgCount.observe(this, Observer { msgCount ->
-            tvTotalMsgSentValue.text = msgCount.size.toString()
+        mMessageViewModel.allMessages.observe(this, Observer { totalMessages ->
+            tvTotalMessagesValue.text = totalMessages.size.toString()
+        })
+
+        mMessageViewModel.getSentMessages.observe(this, Observer { sentMessages ->
+            tvMsgSuccessValue.text = sentMessages.size.toString()
+        })
+
+        mMessageViewModel.getFailedMessages.observe(this, Observer { failedMessages ->
+            tvMsgFailureValue.text = failedMessages.size.toString()
         })
     }
 
     private fun init() {
+        tvConfirmationSms.text =
+            getLongFromPreference(AppConstant.CONFIRMATION_SMS_ALARM)?.formatTime() ?: "null"
+        swAutoStartup.isChecked = getBooleanFromPreference(AppConstant.IS_AUTO_STARTUP) ?: false
         switchWidget1.isChecked =
             getBooleanFromPreference(AppConstant.MOBILE_NO_1) ?: true
         switchWidget2.isChecked =
@@ -83,21 +98,25 @@ class SettingsActivity : BaseActivity() {
             )
         }
 
+        swAutoStartup.setOnCheckedChangeListener { buttonView, isChecked ->
+            setBooleanFromPreference(AppConstant.IS_AUTO_STARTUP, isChecked)
+        }
+
         val fab: View = findViewById(R.id.fabSaveMobileNo)
         fab.setOnClickListener {
-            val intent = Intent(this, HomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            startActivityFromLeft(HomeActivity::class.java)
         }
 
         toolIvAddAlarm.setOnClickListener {
-            val intent = Intent(this, AddAlarmsActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            startActivityFromLeft(AddAlarmsActivity::class.java)
         }
 
         toolIvBack.setOnClickListener {
             finish()
+        }
+
+        tvConfirmationSms.setOnClickListener {
+            setConfirmationSmsAlarm()
         }
 
     }
@@ -161,9 +180,52 @@ class SettingsActivity : BaseActivity() {
         }
     }
 
-    private fun toast(msg: String) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    private fun setConfirmationSmsAlarm() {
+        cancelAlarm(getLongFromPreference(AppConstant.CONFIRMATION_SMS_ALARM)?.toInt() ?: 0 * 1000)
+
+        val addAlarmCalendar = Calendar.getInstance()
+
+        addAlarmCalendar.apply {
+            set(Calendar.HOUR_OF_DAY, 22)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+        }
+        setAlarm(
+            calendar = addAlarmCalendar,
+            requestCode = ((addAlarmCalendar.timeInMillis).toInt() * 1000),
+            title = "Confirmation Message..." + getAlarmTitle(addAlarmCalendar.timeInMillis)
+        )
     }
 
+    fun setAlarm(
+        calendar: Calendar,
+        requestCode: Int, title: String
+    ) {
+        Log.v(
+            "SET_ALARM_TIME_STAMP",
+            ">>> SET_ALARM_TIME_STAMP : $requestCode"
+        )
+        val notifyIntent = Intent(this, ConfirmationSmsReceiver::class.java)
 
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            requestCode,
+            notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            24 * 60 * 60 * 1000,
+            pendingIntent
+        )
+        addLongToPreference(AppConstant.CONFIRMATION_SMS_ALARM, calendar.timeInMillis)
+
+        Log.v(
+            "SET_ALARM",
+            ">>> Confirmation SMS -> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
+        )
+    }
 }

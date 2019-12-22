@@ -12,15 +12,22 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.infomantri.autosms.send.R
+import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.constants.AppConstant.Color.colorAsset
 import com.infomantri.autosms.send.database.Message
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MessageListAdapter(copiedText: (String, String, Int) -> Unit, deleteMsg: (Int) -> Unit) :
+class MessageListAdapter(
+    copiedText: (String, String, Int) -> Unit,
+    deleteMsg: (Int) -> Unit,
+    msgStatus: (String, Int) -> Unit
+) :
     ListAdapter<Message, MessageListAdapter.MsgViewHolder>(DIFF_UTIL) {
 
     val mCopiedText = copiedText
     val mDeleteMsg = deleteMsg
+    val mMsgStatus = msgStatus
 
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<Message>() {
@@ -40,6 +47,7 @@ class MessageListAdapter(copiedText: (String, String, Int) -> Unit, deleteMsg: (
         val categoryItemView: TextView = itemView.findViewById(R.id.tvCategoryValue)
         val sendMsgStatusItemView: TextView = itemView.findViewById(R.id.tvSendMsgStatus)
         val timeStampItemView: TextView = itemView.findViewById(R.id.tvTimeStamp)
+        val msgStatusItemView: TextView = itemView.findViewById(R.id.tvSendMsgStatus)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MsgViewHolder {
@@ -54,8 +62,9 @@ class MessageListAdapter(copiedText: (String, String, Int) -> Unit, deleteMsg: (
         holder.timeStampItemView.text =
             SimpleDateFormat("dd-MMM-yyyy", Locale.US).format(current.timeStamp)
 
-        when {
+        holder.itemView.setBackgroundColor(Color.parseColor(colorAsset[(colorAsset.indices).random()]))
 
+        when {
             current.sent -> {
                 holder.sendMsgStatusItemView.text = "sent"
                 holder.sendMsgStatusItemView.setTextColor(Color.parseColor("#81C784"))
@@ -65,11 +74,12 @@ class MessageListAdapter(copiedText: (String, String, Int) -> Unit, deleteMsg: (
                 holder.sendMsgStatusItemView.text = "pending"
                 holder.sendMsgStatusItemView.setTextColor(Color.parseColor("#FF7043"))
             }
+        }
 
-            current.isFailed -> {
-                holder.sendMsgStatusItemView.text = "failed"
-                holder.sendMsgStatusItemView.setTextColor(Color.parseColor("#EF5350"))
-            }
+        if (current.isFailed) {
+            holder.sendMsgStatusItemView.text = "failed"
+            holder.sendMsgStatusItemView.setTextColor(Color.parseColor("#EF5350"))
+            holder.itemView.setBackgroundResource(R.drawable.ic_border_error_bg)
         }
 
         holder.itemView.setOnLongClickListener {
@@ -79,6 +89,20 @@ class MessageListAdapter(copiedText: (String, String, Int) -> Unit, deleteMsg: (
                 current.id
             )
             return@setOnLongClickListener true
+        }
+
+
+
+        holder.msgStatusItemView.setOnClickListener {
+            if (current.isFailed.not()) {
+                if (current.sent) {
+                    mMsgStatus(AppConstant.Status.SENT, current.id)
+                } else {
+                    mMsgStatus(AppConstant.Status.PENDING, current.id)
+                }
+            } else {
+                mMsgStatus(AppConstant.Status.FAILURE, current.id)
+            }
         }
     }
 

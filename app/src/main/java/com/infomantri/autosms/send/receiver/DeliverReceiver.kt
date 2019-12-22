@@ -37,6 +37,12 @@ class DeliverReceiver : BroadcastReceiver() {
         Log.v("Deliver_onReceive", ">>> DeliverReceiver onReceive() .....")
         context?.let {
             val msgId = intent?.extras?.getInt(AppConstant.MESSAGE_ID) ?: -1
+            var title = "Message Delivered Successfully"
+            var subTitle = "Msg id: $msgId Time: ${Calendar.getInstance().formatTime()}"
+            if (intent?.action == AppConstant.Intent.ACTION_CONFIRMATION_SMS) {
+                title = "Confirmation SMS Delivered Successfully"
+                subTitle = "Confirmation for Phone Call Alarms sent..."
+            }
             Log.v(
                 "ASYNC_TASK",
                 ">>> Before Async Task in Deliver onReceive()... resultCode: $resultCode msgId: $msgId}"
@@ -53,9 +59,9 @@ class DeliverReceiver : BroadcastReceiver() {
 
                     sendNotification(
                         context,
-                        AppConstant.NOTIFICATION_ID,
-                        "Message Delivered Successfully",
-                        "Msg id: $msgId Time: ${Calendar.getInstance().formatTime()}",
+                        System.currentTimeMillis().toInt() * 1000,
+                        title,
+                        subTitle,
                         HomeActivity::class.java,
                         channelId = AppConstant.Notification.Channel.MESSAGE_CHANNEL_ID,
                         channelName = AppConstant.Notification.Channel.MESSAGE_CHANNEL
@@ -71,7 +77,7 @@ class DeliverReceiver : BroadcastReceiver() {
                 Activity.RESULT_CANCELED -> {
                     sendNotification(
                         context,
-                        AppConstant.NOTIFICATION_ID,
+                        System.currentTimeMillis().toInt() * 1000,
                         "Message not Delivered",
                         "Activity.RESULT_CANCELED Time: ${Calendar.getInstance().formatTime()}",
                         HomeActivity::class.java,

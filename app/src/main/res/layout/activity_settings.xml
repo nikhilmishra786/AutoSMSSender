@@ -104,37 +104,49 @@
                     app:layout_constraintEnd_toEndOf="@id/guideEnd"
                     app:layout_constraintTop_toTopOf="@id/tvDefaultMobileNoValue2" />
 
-            <!--<androidx.appcompat.widget.AppCompatImageView-->
-            <!--android:id="@+id/ivSettingEdit"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--app:srcCompat="@drawable/ic_edit"-->
-            <!--android:padding="@dimen/padding_16"-->
-            <!--android:background="?selectableItemBackgroundBorderless"-->
-            <!--app:layout_constraintEnd_toEndOf="@id/guideEnd"-->
-            <!--app:layout_constraintTop_toTopOf="@+id/tvDefaultMobileNoValue"-->
-            <!--app:layout_constraintBottom_toBottomOf="@+id/tvDefaultMobileNoValue"/>-->
+            <TextView
+                    android:id="@+id/tvAutoStartup"
+                    style="@style/SettingsSubTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_32"
+                    android:gravity="start"
+                    android:text="Allow Auto Startup"
+                    android:textSize="@dimen/text_18"
+                    app:layout_constraintEnd_toStartOf="@id/switchWidget2"
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue2" />
 
+            <Switch
+                    android:id="@+id/swAutoStartup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="@dimen/text_32"
+                    app:layout_constraintBottom_toBottomOf="@id/tvAutoStartup"
+                    app:layout_constraintEnd_toEndOf="@id/guideEnd"
+                    app:layout_constraintTop_toTopOf="@id/tvAutoStartup" />
 
             <TextView
-                    android:id="@+id/tvTotalMsgSent"
+                    android:id="@+id/tvTotalMessages"
                     style="@style/SettingsTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/margin_32"
-                    android:text="Total Messages Sent : "
+                    android:text="Total Messages : "
                     app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvDefaultMobileNoValue2" />
+                    app:layout_constraintTop_toBottomOf="@id/tvAutoStartup" />
 
             <TextView
-                    android:id="@+id/tvTotalMsgSentValue"
+                    android:id="@+id/tvTotalMessagesValue"
                     style="@style/SettingsSubTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/margin_12"
-                    app:layout_constraintBottom_toBottomOf="@+id/tvTotalMsgSent"
-                    app:layout_constraintStart_toEndOf="@+id/tvTotalMsgSent"
-                    app:layout_constraintTop_toTopOf="@+id/tvTotalMsgSent"
+                    android:textSize="@dimen/text_18"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="@+id/tvTotalMessages"
+                    app:layout_constraintStart_toEndOf="@+id/tvTotalMessages"
+                    app:layout_constraintTop_toTopOf="@+id/tvTotalMessages"
                     tools:text="24" />
 
             <TextView
@@ -145,7 +157,7 @@
                     android:layout_marginTop="@dimen/margin_32"
                     android:text="Success : "
                     app:layout_constraintStart_toStartOf="@id/guideStart"
-                    app:layout_constraintTop_toBottomOf="@id/tvTotalMsgSent" />
+                    app:layout_constraintTop_toBottomOf="@id/tvTotalMessages" />
 
             <TextView
                     android:id="@+id/tvMsgSuccessValue"
@@ -153,6 +165,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/margin_12"
+                    android:textColor="@color/successColor"
+                    android:textSize="@dimen/text_18"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="@+id/tvMsgSuccess"
                     app:layout_constraintStart_toEndOf="@+id/tvMsgSuccess"
                     app:layout_constraintTop_toTopOf="@+id/tvMsgSuccess"
@@ -174,29 +189,37 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/margin_12"
+                    android:textColor="@color/failureColor"
+                    android:textSize="@dimen/text_18"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="@+id/tvMsgFailure"
                     app:layout_constraintStart_toEndOf="@+id/tvMsgFailure"
                     app:layout_constraintTop_toTopOf="@+id/tvMsgFailure"
                     tools:text="6" />
 
 
-            <!--<EditText-->
-            <!--android:id="@+id/etEnterMobileNo"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginBottom="60dp"-->
-            <!--android:padding="@dimen/text_20"-->
-            <!--app:layout_constraintBottom_toBottomOf="parent"-->
-            <!--app:layout_constraintEnd_toEndOf="parent"-->
-            <!--app:layout_constraintStart_toStartOf="parent"-->
-            <!--android:background="@color/colorTeal"-->
-            <!--android:textColor="@color/white"-->
-            <!--android:textSize="@dimen/margin_20"-->
-            <!--android:hint="Enter Mobile Number"-->
-            <!--android:textColorHint="@color/white"-->
-            <!--android:maxLength="10"-->
-            <!--android:inputType="phone"-->
-            <!--/>-->
+            <TextView
+                    android:id="@+id/tvConfirmationSmsTitle"
+                    style="@style/SettingsTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_30"
+                    android:text="Confirmation SMS:"
+                    app:layout_constraintStart_toStartOf="@id/guideStart"
+                    app:layout_constraintTop_toBottomOf="@id/tvMsgFailure" />
+
+            <TextView
+                    android:id="@+id/tvConfirmationSms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/margin_20"
+                    android:text="Set Alarm"
+                    android:textSize="@dimen/text_18"
+                    android:textStyle="bold"
+                    android:textColor="@color/orange"
+                    app:layout_constraintBottom_toBottomOf="@+id/tvConfirmationSmsTitle"
+                    app:layout_constraintStart_toEndOf="@id/tvConfirmationSmsTitle"
+                    app:layout_constraintTop_toTopOf="@id/tvConfirmationSmsTitle" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fabSaveMobileNo"

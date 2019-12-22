@@ -1,11 +1,17 @@
 package com.infomantri.autosms.send
 
-import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
+import android.app.*
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.util.Log
 import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.receiver.ConfirmationSmsReceiver
+import com.infomantri.autosms.send.util.formatDate
+import com.infomantri.autosms.send.util.formatTime
+import com.infomantri.autosms.send.util.getAlarmTitle
+import com.infomantri.autosms.send.util.startSmsRetriever
+import java.util.*
 
 class SmsSenderApp : Application() {
 
@@ -27,6 +33,7 @@ class SmsSenderApp : Application() {
     override fun onCreate() {
         super.onCreate()
         createNotification()
+        startSmsRetriever()
     }
 
     private fun createNotification() {
@@ -59,5 +66,4 @@ class SmsSenderApp : Application() {
                 .createNotificationChannel(phoneCallAlarmReminder)
         }
     }
-
 }

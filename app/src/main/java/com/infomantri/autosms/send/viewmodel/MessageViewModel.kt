@@ -16,14 +16,16 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
     val allMessages: LiveData<List<Message>>
     var messageId: Int = -1
     val _getMsgById: LiveData<Message>
-    val getSentMsgCount: LiveData<List<Message>>
+    val getSentMessages: LiveData<List<Message>>
+    val getFailedMessages: LiveData<List<Message>>
 
     init {
         val msgsDao = MessageRoomDatabase.getDatabase(application).messageLiveDataDao()
         liveDataRepository = MessageLiveDataRepository(msgsDao, messageId)
         allMessages = liveDataRepository.allMessages
         _getMsgById = liveDataRepository.messageById
-        getSentMsgCount = liveDataRepository.getSentMsgCount
+        getSentMessages = liveDataRepository.getSentMessages
+        getFailedMessages = liveDataRepository.getFailedMessages
     }
 
     fun getMsgById(msgId: Int) {

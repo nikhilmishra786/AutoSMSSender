@@ -9,7 +9,13 @@ import android.util.Log
 import android.widget.Toast
 import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.constants.AppConstant
+import com.infomantri.autosms.send.database.MessageDbRepository
+import com.infomantri.autosms.send.database.MessageRoomDatabase
 import com.infomantri.autosms.send.util.setBooleanFromPreference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,6 +26,7 @@ class SentReceiver : BroadcastReceiver() {
         val pendingResult: PendingResult = goAsync()
 
         Log.v("Sent_onReceive", ">>> Sent onRecive() .....")
+        val msgId = intent?.extras?.getInt(AppConstant.MESSAGE_ID) ?: -1
         val reminderId = intent?.getIntExtra(AppConstant.Reminder.REMINDER_ID, 1000) ?: 1111
         val title = intent?.getStringExtra(AppConstant.Reminder.TITLE) ?: "title: "
         val timeStamp = intent?.getLongExtra(AppConstant.Reminder.TIME_STAMP, -1) ?: "timeStamp: "
@@ -47,18 +54,22 @@ class SentReceiver : BroadcastReceiver() {
                 }
 
                 SmsManager.RESULT_ERROR_GENERIC_FAILURE -> {
+                    updateStatusToFailed(context, msgId)
                     toast(context, "Sms Error Generic Failure...")
                 }
 
                 SmsManager.RESULT_ERROR_NO_SERVICE -> {
+                    updateStatusToFailed(context, msgId)
                     toast(context, "Sms Error No Service")
                 }
 
                 SmsManager.RESULT_ERROR_NULL_PDU -> {
+                    updateStatusToFailed(context, msgId)
                     toast(context, "Sms Error Null PDU")
                 }
 
                 SmsManager.RESULT_ERROR_RADIO_OFF -> {
+                    updateStatusToFailed(context, msgId)
                     toast(context, "Sms Error Radio Off")
                 }
 
@@ -68,13 +79,43 @@ class SentReceiver : BroadcastReceiver() {
                         ">>> STATUS_ON_ICC_SENT: ${SmsManager.STATUS_ON_ICC_SENT}...->"
                     )
 
-                    toast(context, "Message sent successfully...", false)
+                    toast(context, "Message sent RESULT_CANCELED...", false)
                 }
 
                 else -> {
 
                 }
 
+            }
+        }
+    }
+
+    fun updateStatusToFailed(context: Context, msgId: Int) {
+        Log.v("MSG_DELIVERED", ">>> Msg updateStatusToFailed Running AsyncTask onStarted()...")
+
+        val mJob = Job()
+        CoroutineScope(Dispatchers.Default + mJob).launch {
+
+            Log.v("MSG_DECODED_SHARED_PREF", ">>> Msg Id is received  Id: $msgId")
+            val msgDao = MessageRoomDatabase.getDatabase(context).messageDbDao()
+            val repository = MessageDbRepository(msgDao, id = msgId)
+
+            val message = repository.messageById
+            Log.v("Updated_MSG", ">>> Msg: $message")
+
+            message?.let {
+                if (msgId != -1) {
+                    message.sent = false
+                    message.timeStamp = System.currentTimeMillis()
+                    message.isFailed = true
+                }
+                Log.v("MSG_STATUS_UPDATED", ">>> Msg sent = true : sent: ${message.sent}")
+                repository.updateMessage(message)
+
+                Log.v(
+                    "MSG_DELIVERY_STATUS",
+                    ">>> onReceive() Msg: -> ${message.message} Status: ${message.sent} -> id: ${message.id}"
+                )
             }
         }
     }

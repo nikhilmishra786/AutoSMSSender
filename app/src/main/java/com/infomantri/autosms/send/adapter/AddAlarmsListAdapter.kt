@@ -72,7 +72,7 @@ class AddAlarmsListAdapter(repeatAlarm: (Boolean, Long, Int) -> Unit, deleteAlar
         }
 
         when (calendar.get(Calendar.HOUR_OF_DAY)) {
-            in 0..7 -> holder.itemView.setBackgroundResource(R.drawable.ic_border_bg)
+            in 0..6 -> holder.itemView.setBackgroundResource(R.drawable.ic_border_bg)
         }
         holder.alarmSwithItemView.setOnCheckedChangeListener { buttonView, isChecked ->
             mRepeatAlarm(isChecked, current.alarmTimeStamp, current.id)

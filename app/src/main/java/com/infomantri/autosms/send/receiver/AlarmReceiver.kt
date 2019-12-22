@@ -1,8 +1,5 @@
 package com.infomantri.autosms.send.receiver
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,11 +9,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import com.infomantri.autosms.send.R
 import com.infomantri.autosms.send.activity.AddAlarmsActivity
-import com.infomantri.autosms.send.activity.HomeActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.util.*
 import java.text.SimpleDateFormat
@@ -33,14 +26,6 @@ class AlarmReceiver : BroadcastReceiver() {
             "Reminder is from : ${SimpleDateFormat("hh:mm a", Locale.US).format(
                 timeStamp
             )}"
-        val isPhoneCallAlarm =
-            intent?.getBooleanExtra(AppConstant.Intent.PHONE_CALL_ALARM, false) ?: false
-        Log.v(
-            "PHONE_CALL_ALARM",
-            ">>> PHONE_CALL_ALARM onReceive() ... $isPhoneCallAlarm timeStamp: $timeStamp Time: ${formatDate(
-                timeStamp as Long
-            )}"
-        )
 
         context?.let {
             playRingtone(context)
@@ -48,18 +33,45 @@ class AlarmReceiver : BroadcastReceiver() {
             Toast.makeText(context, "REMINDER", Toast.LENGTH_LONG).show()
 
             if (intent?.action == AppConstant.Intent.ACTION_MESSAGE_ALARM) {
+                timeStamp as Long
                 sendSMS(context)
+                sendNotification(
+                    context,
+                    System.currentTimeMillis().toInt(),
+                    "Phone Call Alarm Successfully Done",
+                    "Phone Call for Wakeup Alarm... ${timeStamp.formatTime()}",
+                    AddAlarmsActivity::class.java,
+                    channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
+                    channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
+                )
             }
 
             if (intent?.action == AppConstant.Intent.ACTION_PHONE_CALL_ALARM) {
                 context.phoneCallToNumber(
                     context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
                 )
+                timeStamp as Long
                 sendNotification(
                     context,
                     System.currentTimeMillis().toInt(),
                     "Phone Call Alarm Successfully Done",
-                    "Phone Call to Nitin Jio for Wakeup Alarm... ${timeStamp.formatTime()}",
+                    "Phone Call for Wakeup Alarm... ${timeStamp.formatTime()}",
+                    AddAlarmsActivity::class.java,
+                    channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
+                    channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL
+                )
+            }
+
+            if (intent?.action == AppConstant.Intent.ACTION_CONFIRMATION_SMS) {
+                context.phoneCallToNumber(
+                    context.getStringFromPreference(AppConstant.DEFAULT_MOBILE_NO) ?: "9321045517"
+                )
+                timeStamp as Long
+                sendNotification(
+                    context,
+                    System.currentTimeMillis().toInt(),
+                    "Phone Call Alarm for Request Successfully Done",
+                    "Phone Call for Requested Alarm... ${timeStamp.formatTime()}",
                     AddAlarmsActivity::class.java,
                     channelId = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL_ID,
                     channelName = AppConstant.Notification.Channel.PHONE_CALL_CHANNEL

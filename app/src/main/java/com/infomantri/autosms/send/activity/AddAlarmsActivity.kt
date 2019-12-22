@@ -8,8 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -25,20 +23,23 @@ import com.infomantri.autosms.send.adapter.PhoneCallListAdapter
 import com.infomantri.autosms.send.adapter.SwipeToDeleteCallback
 import com.infomantri.autosms.send.asynctask.BaseAsyncTask
 import com.infomantri.autosms.send.base.BaseActivity
-import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.*
+import com.infomantri.autosms.send.database.PhoneCall.PhoneCallAlarm
+import com.infomantri.autosms.send.database.PhoneCall.PhoneCallRepository
 import com.infomantri.autosms.send.receiver.AlarmReceiver
-import com.infomantri.autosms.send.receiver.DozeReceiver
 import com.infomantri.autosms.send.util.*
 import com.infomantri.autosms.send.viewmodel.AddAlarmViewModel
 import com.infomantri.autosms.send.viewmodel.PhoneCallViewModel
 import kotlinx.android.synthetic.main.activity_add_alarms.*
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.sql.Time
 import java.util.*
+import kotlin.collections.ArrayList
 
 class AddAlarmsActivity : BaseActivity() {
 
@@ -48,7 +49,11 @@ class AddAlarmsActivity : BaseActivity() {
 
     var alarmData =
         AddAlarm(System.currentTimeMillis(), id = -1)
-    var phoneCallAlarmData = PhoneCallAlarm(System.currentTimeMillis(), id = -1)
+    var phoneCallAlarmData =
+        PhoneCallAlarm(
+            System.currentTimeMillis(),
+            id = -1
+        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,11 +155,14 @@ class AddAlarmsActivity : BaseActivity() {
         val itemTouchHelper = ItemTouchHelper(swipeHandler)
         itemTouchHelper.attachToRecyclerView(rvPhoneCallAlarm)
 
+
         mPhoneCallViewModel.allPhoneCallAlarms.observe(
             this,
-            androidx.lifecycle.Observer
-            { alarmList ->
+            androidx.lifecycle.Observer { alarmList ->
                 phoneCallAdapter.submitList(alarmList)
+                alarmList.iterator().forEach { phoneCallAlarm ->
+                    phoneCallAlarm.alarmTimeStamp.formatTime()
+                }
             })
     }
 
@@ -169,69 +177,17 @@ class AddAlarmsActivity : BaseActivity() {
         }
 
         toolIvSettings.setOnClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+           startActivityFromLeft(SettingsActivity::class.java)
         }
 
         toolIvHome.setOnClickListener {
-            val intent = Intent(this, HomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            startActivityFromLeft(HomeActivity::class.java)
         }
 
         fabAddMsgAlarm.setOnClickListener {
             showTimePicker(true)
         }
-    }
 
-    private fun setDozeModeAlarm(
-        calendar: Calendar,
-        requestCode: Int, title: String
-    ) {
-//        val morningAlarm = Calendar.getInstance().apply {
-//            set(Calendar.HOUR_OF_DAY, 4)
-//            set(Calendar.MINUTE, 29)
-//            set(Calendar.SECOND, 0)
-//        }
-        calendar.apply {
-            set(Calendar.SECOND, 0)
-        }
-
-        val notifyIntent = Intent(this, DozeReceiver::class.java).apply {
-            putExtra(AppConstant.Reminder.TIME_STAMP, calendar.timeInMillis)
-            putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
-            putExtra(AppConstant.Reminder.TITLE, title)
-            action = AppConstant.Intent.ACTION_DOZE_MODE_ALARM
-        }
-        notifyIntent.action = "action.doze.alarm"
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            requestCode,
-            notifyIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        if (Date().after(calendar.time)) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1)
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
-        }
-        Log.v(
-            "SET_ALARM",
-            ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
-        )
     }
 
     private fun showTimePicker(isAddMsgAlarm: Boolean) {
@@ -286,7 +242,11 @@ class AddAlarmsActivity : BaseActivity() {
                 set(Calendar.MINUTE, minute)
                 set(Calendar.SECOND, 0)
             }
-            mPhoneCallViewModel.insertPhoneCallAlarm(PhoneCallAlarm(addAlarmCalendar.timeInMillis))
+            mPhoneCallViewModel.insertPhoneCallAlarm(
+                PhoneCallAlarm(
+                    addAlarmCalendar.timeInMillis
+                )
+            )
             phoneCallAdapter.notifyDataSetChanged()
             setAlarm(
                 calendar = addAlarmCalendar,
@@ -302,62 +262,6 @@ class AddAlarmsActivity : BaseActivity() {
 //            showBlendToast("Alarm added at ${addAlarmCalendar.formatDateToTime()}")
             Log.v("ALARM_TITLE", ">>> Alarm Title: ${getAlarmTitle(addAlarmCalendar.timeInMillis)}")
         }
-    }
-
-    private fun setAlarm(
-        calendar: Calendar,
-        requestCode: Int, title: String, isAddMsgAlarm: Boolean
-    ) {
-        Log.v(
-            "SET_ALARM_TIME_STAMP",
-            ">>> SET_ALARM_TIME_STAMP : $requestCode"
-        )
-        val notifyIntent = Intent(this, AlarmReceiver::class.java).apply {
-            putExtra(AppConstant.Reminder.TIME_STAMP, calendar.timeInMillis)
-            putExtra(AppConstant.Reminder.REMINDER_ID, requestCode)
-            putExtra(AppConstant.Reminder.TITLE, title)
-            if (isAddMsgAlarm) {
-                action = AppConstant.Intent.ACTION_MESSAGE_ALARM
-                putExtra(AppConstant.Intent.PHONE_CALL_ALARM, false)
-            } else {
-                action = AppConstant.Intent.ACTION_PHONE_CALL_ALARM
-                putExtra(AppConstant.Intent.PHONE_CALL_ALARM, true)
-            }
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            requestCode,
-            notifyIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        if (Date().after(calendar.time)) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1)
-            alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                24 * 60 * 60 * 1000,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                24 * 60 * 60 * 1000,
-                pendingIntent
-            )
-        }
-
-        when (calendar.get(Calendar.HOUR_OF_DAY)) {
-            in 0..7 -> setDozeModeAlarm(calendar, requestCode, title)
-        }
-
-        Log.v(
-            "SET_ALARM",
-            ">>> $title: Time: ${calendar.formatTime()} Date: ${calendar.formatDate()}"
-        )
     }
 
     private fun setRepeatingAlarm(
@@ -517,7 +421,11 @@ class AddAlarmsActivity : BaseActivity() {
             override fun onStarted() {
                 Log.v("DELETE_MSG", ">>> deleting Phone Call Alarm...")
                 val phoneCallDao = MessageRoomDatabase.getDatabase(application).phoneCallAlarmDao()
-                val repository = PhoneCallRepository(phoneCallDao, msgId)
+                val repository =
+                    PhoneCallRepository(
+                        phoneCallDao,
+                        msgId
+                    )
                 val alarmToDelete = repository.alarmById
                 phoneCallAlarmData = alarmToDelete
                 repository.deletePhoneCallAlarm(alarmToDelete)
@@ -553,31 +461,6 @@ class AddAlarmsActivity : BaseActivity() {
                 }
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-    }
-
-    private fun cancelAlarm(requestCode: Int) {
-
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent =
-            PendingIntent.getBroadcast(this, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        alarmManager.cancel(pendingIntent)
-        Log.v("NEXT_ALARM", ">>> Next Alarm : ${alarmManager.nextAlarmClock}")
-    }
-
-    private fun getAlarmTitle(timeStamp: Long): String {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = timeStamp
-
-        return when (calendar.get(Calendar.HOUR_OF_DAY)) {
-
-            in 0..3 -> "Mid Night"
-            in 4..11 -> "Good Morning"
-            in 12..15 -> "Good After Noon"
-            in 16..20 -> "Good Evening"
-            in 21..23 -> "Good Night"
-            else -> "Good Day"
-        }
     }
 
     private val REQUEST_CALL_PHONE = 100

@@ -31,14 +31,17 @@ import com.infomantri.autosms.send.base.BaseActivity
 import com.infomantri.autosms.send.constants.AppConstant
 import com.infomantri.autosms.send.database.MessageDbRepository
 import com.infomantri.autosms.send.database.MessageRoomDatabase
-import com.infomantri.autosms.send.util.initViewModel
-import com.infomantri.autosms.send.util.sendSMS
-import com.infomantri.autosms.send.util.showBlendToast
+import com.infomantri.autosms.send.database.PhoneCall.PhoneCallRepository
+import com.infomantri.autosms.send.util.*
 import com.infomantri.autosms.send.viewmodel.MessageViewModel
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bootom_sheet.*
 import kotlinx.android.synthetic.main.custom_toolbar.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class HomeActivity : BaseActivity() {
 
@@ -70,19 +73,6 @@ class HomeActivity : BaseActivity() {
         startSmsRetriever()
     }
 
-    private fun startSmsRetriever() {
-        val appSignatureHelper = AppSignatureHelper(this)
-
-        val client = SmsRetriever.getClient(this)
-
-        val task = client.startSmsRetriever()
-
-        task.addOnSuccessListener { _ -> Log.d("CodeActivity", "Sms listener started!") }
-        task.addOnFailureListener { e ->
-            Log.e("CodeActivity", "Failed to start sms retriever: ${e.message}")
-        }
-    }
-
     private fun setToolbar() {
         toolIvHome.visibility = View.GONE
         toolbar.setToolbar(
@@ -96,35 +86,45 @@ class HomeActivity : BaseActivity() {
     private fun setOnClickListener() {
         val fab: View = findViewById(R.id.fabAddMessage)
         fab.setOnClickListener {
-            val intent = Intent(this, AddMessages::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            //            val intent = Intent(this, AddMessages::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            startActivity(intent)
+            startActivityFromLeft(AddMessages::class.java)
         }
 
         toolIvAddAlarm.setOnClickListener {
-            val intent = Intent(this, AddAlarmsActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+            //            val intent = Intent(this, AddAlarmsActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            startActivity(intent)
+            startActivityFromLeft(AddAlarmsActivity::class.java)
         }
 
         toolIvSettings.setOnClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-        }
-
-        btnSendSms.setOnClickListener {
-            sendSMS(context = this)
+            //            val intent = Intent(this, SettingsActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            startActivity(intent)
+            startActivityFromLeft(SettingsActivity::class.java)
         }
 
     }
 
     private fun setRecyclerView() {
-        val adapter = MessageListAdapter(copiedText = { copiedText, msg, id ->
-            copyToClipBoard(copiedText, msg)
-        }, deleteMsg = { id ->
-            deleteMsgById(id)
-        })
+        val adapter = MessageListAdapter(
+            copiedText = { copiedText, msg, id ->
+                copyToClipBoard(copiedText, msg)
+            },
+            deleteMsg = { id ->
+                deleteMsgById(id)
+            },
+            msgStatus = { status, msgId ->
+                if (AppConstant.Status.FAILURE == status) {
+                    updateStatusToPending(this, msgId)
+                } else if (status == AppConstant.Status.PENDING) {
+                    sendSMS(this)
+                } else {
+                    updateStatusToPending(this, msgId)
+                }
+            })
         recyclerview.adapter = adapter
         val linearLayoutManager = LinearLayoutManager(this)
         linearLayoutManager.reverseLayout = true
@@ -229,16 +229,12 @@ class HomeActivity : BaseActivity() {
         return when (item.itemId) {
 
             R.id.action_settings -> {
-                val intent = Intent(this, SettingsActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                startActivity(intent)
+                startActivityFromLeft(SettingsActivity::class.java)
                 true
             }
 
             R.id.action_set_alarm -> {
-                val intent = Intent(this, AddAlarmsActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                startActivity(intent)
+                startActivityFromLeft(AddAlarmsActivity::class.java)
                 return true
             }
             else -> {

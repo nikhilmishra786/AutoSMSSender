@@ -1,59 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:padding="@dimen/text_10"
-android:background="@color/white">
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:padding="@dimen/text_10">
 
     <TextView
             android:id="@+id/tvCategoryLabel"
             style="@style/msg_title"
             android:text="category : "
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
             android:id="@+id/tvCategoryValue"
             style="@style/msg_title"
-            android:text="Motivation"
             android:layout_marginStart="@dimen/margin_12"
-            app:layout_constraintTop_toTopOf="@id/tvCategoryLabel"
+            android:text="Motivation"
             app:layout_constraintBottom_toBottomOf="@id/tvCategoryLabel"
-            app:layout_constraintStart_toEndOf="@id/tvCategoryLabel"/>
+            app:layout_constraintStart_toEndOf="@id/tvCategoryLabel"
+            app:layout_constraintTop_toTopOf="@id/tvCategoryLabel" />
 
     <TextView
             android:id="@+id/tvSendMsgStatus"
             style="@style/msg_title"
-            android:text="pending"
             android:layout_marginEnd="@dimen/margin_24"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/tvTimeStamp"/>
+            android:text="pending"
+            app:layout_constraintEnd_toStartOf="@id/tvTimeStamp"
+            app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
             android:id="@+id/tvTimeStamp"
             style="@style/msg_title"
-            android:textStyle="normal"
             android:text="10-Aug-2019"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:textStyle="normal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
             android:id="@+id/tvMsgBody"
             style="@style/msg_title"
+            android:layout_marginTop="@dimen/text_10"
+            android:gravity="start"
             android:text="In Java, this is usually obtained by keeping references to threads and calling
  join on all of them in order to block the main thread while waiting for all the others. ..."
-            android:layout_marginTop="@dimen/text_10"
-            app:layout_constraintTop_toBottomOf="@id/tvCategoryLabel"
+            android:textSize="@dimen/text_18"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:textStyle="normal"
-            android:textSize="@dimen/text_16"
-            android:gravity="start"
-    />
+            app:layout_constraintTop_toBottomOf="@id/tvCategoryLabel" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

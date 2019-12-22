@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.infomantri.autosms.send.R
 
 abstract class SwipeToDeleteCallback(context: Context) :
-    ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+    ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
     private val deleteIcon = ContextCompat.getDrawable(context, R.drawable.ic_delete_white_24dp)
     private val favIcon = ContextCompat.getDrawable(context, R.drawable.ic_favorite_white_24dp)
@@ -19,7 +19,7 @@ abstract class SwipeToDeleteCallback(context: Context) :
     private val intrinsicFavHeight = favIcon?.intrinsicHeight
 
     private val background = ColorDrawable()
-    private val delBackgroundColor = Color.parseColor("#f44336")
+    private val delBackgroundColor = Color.parseColor("#EF5350")
     private val favBackgroundColor = Color.parseColor("#FFA726")
     private val clearPaint = Paint().apply {
         xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)

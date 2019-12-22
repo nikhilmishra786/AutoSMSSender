@@ -23,28 +23,29 @@
     <color name="lightGrey">#EBE6E6</color>
     <color name="backArrow">#8C98AE</color>
     <color name="darkGrey">#8D99AE</color>
-    
+    <color name="successColor">#4CAF50</color>
+    <color name="failureColor">#F44336</color>
+
     <color name="colorBlendToast">#5A2616</color>
     <color name="redColorBlendToast">#E9810B0B</color>
 
-    <color name="dozeModeColor0">#FFCCBC</color>
-    <color name="dozeModeColor1">#FCE4EC</color>
-    <color name="dozeModeColor2">#FFFCE4EC</color>
-    <color name="dozeModeColor3">#FFF3E5F5</color>
-    <color name="dozeModeColor4">#FFF3E5F5</color>
-    <color name="dozeModeColor5">#FFEDE7F6</color>
-    <color name="dozeModeColor6">#FFE3F2FD</color>
-    <color name="dozeModeColor7">#FFE1F5FE</color>
-    <color name="dozeModeColor8">#FFE0F7FA</color>
-    <color name="dozeModeColor9">#FFE0F2F1</color>
-    <color name="dozeModeColor10">#FFE8F5E9</color>
-    <color name="dozeModeColor11">#FFF1F8E9</color>
-    <color name="dozeModeColor12">#FFF9FBE7</color>
-    <color name="dozeModeColor13">#FFFFFDE7</color>
-    <color name="dozeModeColor14">#FFFFF8E1</color>
-    <color name="dozeModeColor15">#FFFFF3E0</color>
-    <color name="dozeModeColor16">#FFFBE9E7</color>
-
+    <color name="material50Color0">#FFFFFDE7</color>
+    <color name="material50Color1">#FFFFEBEE</color>
+    <color name="material50Color2">#FFFCE4EC</color>
+    <color name="material50Color3">#FFF3E5F5</color>
+    <color name="material50Color4">#FFF3E5F5</color>
+    <color name="material50Color5">#FFEDE7F6</color>
+    <color name="material50Color6">#FFE3F2FD</color>
+    <color name="material50Color7">#FFE1F5FE</color>
+    <color name="material50Color8">#FFE0F7FA</color>
+    <color name="material50Color9">#FFE0F2F1</color>
+    <color name="material50Color10">#FFE8F5E9</color>
+    <color name="material50Color11">#FFF1F8E9</color>
+    <color name="material50Color12">#FFF9FBE7</color>
+    <color name="material50Color13">#FFFFFDE7</color>
+    <color name="material50Color14">#FFFFF8E1</color>
+    <color name="material50Color15">#FFFFF3E0</color>
+    <color name="material50Color16">#FFFBE9E7</color>
 
 
 </resources>

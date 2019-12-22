@@ -73,6 +73,10 @@
                 android:name=".receiver.DozeReceiver"
                 android:enabled="true" />
 
+        <receiver
+                android:name=".receiver.ConfirmationSmsReceiver"
+                android:enabled="true" />
+
     </application>
 
 </manifest>
